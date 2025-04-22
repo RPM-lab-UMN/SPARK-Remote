@@ -53,14 +53,15 @@ class LaunchDevs(Node):
     def StartModules(self, Spark_devs, SM_devs, VR_devs, haptic_devs):
         print("Starting modules---------------------")
         # modules = [subprocess.Popen(['roscore'], start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)]
+        modules = []
         # time.sleep(1)
         # rospy.init_node('Main', anonymous=True)
         path = os.path.dirname(os.path.abspath(__file__))
 
         # modules.append(subprocess.Popen(['python3', 'Force/ForceNode.py'], start_new_session=True))
         # modules.append(subprocess.Popen(['python3', 'camera/realsense.py', '/both/front/'], start_new_session=True))
-        # modules.append(subprocess.Popen(['python3', 'camera/realsense.py', '/lightning/wrist/'], start_new_session=True))
-        # modules.append(subprocess.Popen(['python3', 'camera/realsense.py', '/thunder/wrist/'], start_new_session=True))
+        modules.append(subprocess.Popen(['python3', 'camera/realsense.py', '/lightning/wrist/'], start_new_session=True))
+        modules.append(subprocess.Popen(['python3', 'camera/realsense.py', '/thunder/wrist/'], start_new_session=True))
         # modules.append(subprocess.Popen(['python3', 'camera/realsense.py', '/both/top/'], start_new_session=True))
         # modules.append(subprocess.Popen(['python3', os.path.join(path, 'Spark/SparkNode_buffer.py')], start_new_session=True))
 

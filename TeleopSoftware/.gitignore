@@ -3,6 +3,6 @@ __pycache__/
 *.bag
 *.h5
 *.gz
-*.pickle
+# *.pickle
 *.tar
 *.tar.gz

@@ -1,118 +1,146 @@
 import pyrealsense2 as rs
-import rospy
+import rclpy
+from rclpy.node import Node
 from sensor_msgs.msg import Image
 import cv2
 from cv_bridge import CvBridge
 import numpy as np
 import sys
 
-try:
-    if len(sys.argv) < 2:
-        camera = None
-    else:
-        camera = sys.argv[1]
-    rospy.init_node(f"Camera", anonymous=True)
+class RealsenseNode(Node):
+    def __init__(self):
+        super().__init__('RealsenseNode')
+        self.bridge = CvBridge()
+        self.pipeline = rs.pipeline()
+        self.config = rs.config()
+        self.working = False
+        self.num_frames = 1
+        self.align = rs.align(rs.stream.color)
 
-    cameras = {
-        '/lightning/wrist/': {
-            'serial': '126122270307', 
-            'hz': 20,
-            # 'hz': 5,
-            'RGB': (480, 270, rs.format.rgb8, 30),
-            # 'RGB': (480, 270, rs.format.rgb8, 
-            # 15),
-            'depth': None
-        },
-        '/thunder/wrist/': {
-            'serial': '126122270722',
-            'hz': 20,
-            # 'hz': 5,
-            'RGB': (480, 270, rs.format.rgb8, 30),
-            # 'RGB': (480, 270, rs.format.rgb8, 6),
-            'depth': None
-        },
-        '/both/front/': {
-            'serial': 'f1371786',
-            'hz': 5,
-            # 'RGB': (1024, 768, rs.format.rgb8, 30),
-            # 'depth': (1024, 768, rs.format.z16, 30)
-            'RGB': (1920, 1080, rs.format.rgb8, 6),
-            'depth': None
-        },
-        '/both/top/': {
-            'serial': 'f1371463',
-            'hz': 5,
-            'RGB': (1920, 1080, rs.format.rgb8, 6),
-            'depth': None
-        },
-    }   
+        # Parse arguments
+        if len(sys.argv) < 2:
+            self.camera = None
+        else:
+            self.camera = sys.argv[1]
 
-    hz = 10
-    if camera is not None:
-        hz = cameras[camera]['hz']
-    rate = rospy.Rate(hz)
-    RGB_topic = f"/cameras/rgb{camera}"
-    pub_rgb = rospy.Publisher(RGB_topic, Image, queue_size=10) 
-    depth_topic = f"/cameras/depth{camera}"
-    pub_depth = rospy.Publisher(depth_topic, Image, queue_size=10) 
-    bridge = CvBridge()
+        # Camera configurations
+        self.cameras = {
+            '/lightning/wrist/': {
+                'serial': '126122270307', 
+                'hz': 20,
+                'RGB': (480, 270, rs.format.rgb8, 30),
+                'depth': None
+            },
+            '/thunder/wrist/': {
+                'serial': '126122270722',
+                'hz': 20,
+                'RGB': (480, 270, rs.format.rgb8, 30),
+                'depth': None
+            },
+            '/both/front/': {
+                'serial': 'f1371786',
+                'hz': 5,
+                'RGB': (1920, 1080, rs.format.rgb8, 6),
+                'depth': None
+            },
+            '/both/top/': {
+                'serial': 'f1371463',
+                'hz': 5,
+                'RGB': (1920, 1080, rs.format.rgb8, 6),
+                'depth': None
+            },
+        }
 
-    mode = "RGB_DEPTH_"
+        # Set up publishers
+        if self.camera is not None:
+            if self.camera not in self.cameras:
+                raise Exception(f"Camera {self.camera} not found")
+            self.hz = self.cameras[self.camera]['hz']
+            camera_topic = self.camera
+            if self.camera[-1] == '/':
+                camera_topic = self.camera[:-1]
+            self.RGB_topic = f"/cameras/rgb{camera_topic}"
+            self.depth_topic = f"/cameras/depth{camera_topic}"
 
-    pipeline = rs.pipeline()
-    config = rs.config()
-    if camera is not None:
-        if camera not in cameras:
-            raise Exception(f"Camera {camera} not found")
-        config.enable_device(cameras[camera]['serial'])
-        if cameras[camera]['RGB'] is not None:
-            print(f"RGB ({RGB_topic}): {cameras[camera]['RGB']}")
-            config.enable_stream(rs.stream.color, *cameras[camera]['RGB'])
-            mode = "RGB_"
-        if cameras[camera]['depth'] is not None:
-            print(f"DEPTH ({depth_topic}): {cameras[camera]['depth']}")
-            config.enable_stream(rs.stream.depth, *cameras[camera]['depth'])
-            mode += "DEPTH_"
-    pipeline.start(config)
-    working = False
+            print(f"Publishing to {self.RGB_topic} and {self.depth_topic}")
+            self.pub_rgb = self.create_publisher(Image, self.RGB_topic, 10)
+            self.pub_depth = self.create_publisher(Image, self.depth_topic, 10)
+        else:
+            self.hz = 10
 
-    num_frames = 1
-    align = rs.align(rs.stream.color)
-    while not rospy.is_shutdown():
-        frames = pipeline.wait_for_frames()
-        if mode == "RGB_DEPTH_":
-            aligned_frames = align.process(frames)
-            color_frame = aligned_frames.get_color_frame()
-            depth_frame = aligned_frames.get_depth_frame()
-            if not depth_frame or not color_frame:
-                print(depth_frame, color_frame)
-                continue
-        elif mode == "RGB_":
-            color_frame = frames.get_color_frame()
-            depth_frame = None
-        elif mode == "DEPTH_":
-            color_frame = None
-            depth_frame = frames.get_depth_frame()
+        # Configure the camera
+        self.configure_camera()
 
-        if depth_frame is not None:
-            depth_image = np.asanyarray(depth_frame.get_data())
-            msg = bridge.cv2_to_imgmsg(depth_image, encoding="16UC1")
-            pub_depth.publish(msg)
+        # Start the pipeline
+        self.pipeline.start(self.config)
 
-        if color_frame is not None:
-            color_image = np.asanyarray(color_frame.get_data())
-            msg = bridge.cv2_to_imgmsg(color_image, encoding="bgr8")
-            pub_rgb.publish(msg)
+        # Create a timer to process frames
+        self.timer = self.create_timer(1.0 / self.hz, self.process_frames)
 
-        if depth_frame is not None or color_frame is not None and not working:
-            working = True
-            print(f"\tPublishing {mode} frames: {camera}")
+    def configure_camera(self):
+        if self.camera is not None:
+            camera_config = self.cameras[self.camera]
+            self.config.enable_device(camera_config['serial'])
+            if camera_config['RGB'] is not None:
+                self.get_logger().info(f"RGB ({self.RGB_topic}): {camera_config['RGB']}")
+                self.config.enable_stream(rs.stream.color, *camera_config['RGB'])
+                self.mode = "RGB_"
+            if camera_config['depth'] is not None:
+                self.get_logger().info(f"DEPTH ({self.depth_topic}): {camera_config['depth']}")
+                self.config.enable_stream(rs.stream.depth, *camera_config['depth'])
+                self.mode += "DEPTH_"
+        else:
+            self.mode = "RGB_DEPTH_"
 
-        rate.sleep()
-        if num_frames % (hz*20) == 0:
-            print(f"\t{camera} frames: \t{num_frames}")
-        num_frames += 1
+    def process_frames(self):
+        try:
+            frames = self.pipeline.wait_for_frames()
+            if self.mode == "RGB_DEPTH_":
+                aligned_frames = self.align.process(frames)
+                color_frame = aligned_frames.get_color_frame()
+                depth_frame = aligned_frames.get_depth_frame()
+                if not depth_frame or not color_frame:
+                    self.get_logger().warn("Missing frames")
+                    return
+            elif self.mode == "RGB_":
+                color_frame = frames.get_color_frame()
+                depth_frame = None
+            elif self.mode == "DEPTH_":
+                color_frame = None
+                depth_frame = frames.get_depth_frame()
 
-except Exception as e:
-    print(e)
-    pass
+            if depth_frame is not None:
+                depth_image = np.asanyarray(depth_frame.get_data())
+                msg = self.bridge.cv2_to_imgmsg(depth_image, encoding="16UC1")
+                self.pub_depth.publish(msg)
+
+            if color_frame is not None:
+                color_image = np.asanyarray(color_frame.get_data())
+                msg = self.bridge.cv2_to_imgmsg(color_image, encoding="bgr8")
+                self.pub_rgb.publish(msg)
+
+            if (depth_frame is not None or color_frame is not None) and not self.working:
+                self.working = True
+                self.get_logger().info(f"Publishing {self.mode} frames: {self.camera}")
+
+            if self.num_frames % (self.hz * 20) == 0:
+                self.get_logger().info(f"{self.camera} frames: {self.num_frames}")
+            self.num_frames += 1
+
+        except Exception as e:
+            self.get_logger().error(f"Error processing frames: {e}")
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = RealsenseNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.pipeline.stop()
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

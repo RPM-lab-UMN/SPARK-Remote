@@ -67,7 +67,7 @@ class GUI(Node):
             pubs[arm+"_q"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_q", 10)
             pubs[arm+"_cartesian"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_cartesian_eef", 10)
             pubs[arm+"_speed"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_speed", 10)
-            pubs[arm+"_gripper"] = self.create_publisher(Float32, f"/{arm.lower()}_gripper", 10)
+            pubs[arm+"_gripper"] = self.create_publisher(Int32, f"/{arm.lower()}_gripper", 10)
             pubs[arm+"_enable"] = self.create_publisher(Bool, f"/{arm.lower()}_enable", 10)
             pubs[arm+"_safety_mode"] = self.create_publisher(Int32, f"/{arm.lower()}_safety_mode", 10)
             # # Force offset

@@ -294,7 +294,7 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
             pubs[arm+"_speed"].publish(Float32MultiArray(data=speed))
 
             gripper = URs.get_gripper(arm).get_current_position()
-            pubs[arm+"_gripper"].publish(Float32(data=gripper))
+            pubs[arm+"_gripper"].publish(Int32(data=gripper))
 
             enable = spark_enable[arm] if arm in spark_enable else False
             pubs[arm+"_enable"].publish(Bool(data=enable))

@@ -14,6 +14,10 @@ start_pose = {}
 vr_start_pose = {}
 homes = {}
 
+# Offsets between Spark
+THUNDER_OFFSET = [-np.pi, -np.pi/2, 0.0, -np.pi/2, -np.pi, -1/2*np.pi, 0] # ToDo
+LIGHTNING_OFFSET =  [-np.pi/2, -np.pi/2, 0.0, -np.pi/2, 0.0, -1/2*np.pi, 0] # Correct
+
 spark_enable = {}
 
 offset = [0,0,0,0]
@@ -37,30 +41,18 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
             if arm.lower()+'_spark_angle' in ros_data:
                 angles = ros_data[arm.lower()+'_spark_angle']
                 if ros_data[arm.lower() + '_change_mode'] == True:
-                    # if arm == "Thunder":
-                    #     homes[arm] = [-np.pi, -np.pi/2, 0.0, -np.pi/2, -np.pi, 0.0, 0.0]
-                    # elif arm == "Lightning":
-                    #     homes[arm] = [0.0, -np.pi/2, 0.0, -np.pi/2, 0.0, 0.0, 0.0]
                     if arm == "Thunder":
-                        homes[arm] = [-np.pi, -np.pi/2, 0.0, -np.pi/2, -np.pi, -1/2*np.pi, 0]
+                        homes[arm] = THUNDER_OFFSET
                     elif arm == "Lightning":
-                        homes[arm] = [0.0, -np.pi/2, 0.0, -np.pi/2, 0.0, 1/2*np.pi, 0]
+                        homes[arm] = LIGHTNING_OFFSET
                     dq = [a-u+h for a, u, h in zip(angles, URs.getActualQ(arm), homes[arm])]
-                    # print("Diff: ", dq)
-                    # print("Home: ", homes[arm])
                     if dq[0] > np.pi:
                         homes[arm][0] = - 2*np.pi
-                        # print("Subbed")
                     elif dq[0] < -np.pi:
                         homes[arm][0] = + 2*np.pi
-                        # print("Added")
-                    # print("Home: ", homes[arm])
-                    # dq = [a-u+h for a, u, h in zip(angles, URs.getActualQ(arm), homes[arm])]
-                    # print("Diff: ", dq)
                     ros_data[arm.lower() + '_change_mode'] = False
                     
                 angles = [angle + homes[arm][i] for i, angle in enumerate(angles)]
-                # print(angles)
                 if arm == "Lightning":
                     gripper = np.clip((-1.0-angles[6]*2), 0, 1)
                 else:

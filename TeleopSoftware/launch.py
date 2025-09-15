@@ -11,9 +11,6 @@ from launch_helpers.opt import UR5eForceControl
 from launch_helpers.run import *
 from launch_helpers.tk_functions import *
 
-# import rospy
-# from std_msgs.msg import Float32MultiArray, String, Bool, Float32, Int32
-# Update to ROS2
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray, String, Bool, Float32, Int32
@@ -24,16 +21,8 @@ class GUI(Node):
         pass
 
     def main(self):
-        # rospy.init_node('Main', anonymous=True)
-        # rclpy.init()
         self.ros_data = {}
         control_modes = {}
-
-
-        # store the data in a global variable so it can be accessed from the main loop
-        # rospy.Subscriber("/SpaceMouseThunder", Float32MultiArray, lambda data: globals().update({'thunder_data': data.data}))
-        # rospy.Subscriber("/SpaceMouseThunderLog", Float32MultiArray, lambda data: globals().update({'thunder_data': data.data}))
-
 
         thunder_ip = "10.33.55.89"
         lightning_ip = "10.33.55.90"
@@ -41,7 +30,6 @@ class GUI(Node):
         arms = ["Thunder", "Lightning"]
         ips = [thunder_ip, lightning_ip]
         enable_control = {
-            # "Thunder": False,
             "Thunder": True,
             "Lightning": True,
         }
@@ -50,17 +38,6 @@ class GUI(Node):
 
         pubs = dict()
         for arm in arms:
-            # pubs[arm+"_reset_estop"] = rospy.Publisher("/reset_estop", Bool, queue_size=10)
-            # pubs[arm+"_ft"] = rospy.Publisher(f"/{arm.lower()}_ft", Float32MultiArray, queue_size=10)
-            # pubs[arm+"_ft_raw"] = rospy.Publisher(f"/{arm.lower()}_raw_ft_raw", Float32MultiArray, queue_size=10)
-            # pubs[arm+"_q"] = rospy.Publisher(f"/{arm.lower()}_q", Float32MultiArray, queue_size=10)
-            # pubs[arm+"_cartesian"] = rospy.Publisher(f"/{arm.lower()}_cartesian_eef", Float32MultiArray, queue_size=10)
-            # pubs[arm+"_speed"] = rospy.Publisher(f"/{arm.lower()}_speed", Float32MultiArray, queue_size=10)
-            # pubs[arm+"_gripper"] = rospy.Publisher(f"/{arm.lower()}_gripper", Float32, queue_size=10)
-            # pubs[arm+"_enable"] = rospy.Publisher(f"/{arm.lower()}_enable", Bool, queue_size=10)
-            # pubs[arm+"_safety_mode"] = rospy.Publisher(f"/{arm.lower()}_safety_mode", Int32, queue_size=10)
-            # # Force offset
-            # pubs[arm+"_force_offset"] = rospy.Publisher(f"/{arm.lower()}_force_offset", Float32MultiArray, queue_size=10)
             pubs[arm+"_reset_estop"] = self.create_publisher(Bool, "/reset_estop", 10)
             pubs[arm+"_ft"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_ft", 10)
             pubs[arm+"_ft_raw"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_raw_ft_raw", 10)
@@ -76,17 +53,15 @@ class GUI(Node):
         colors = ["light blue", "light green"]
         spark_homes = [(+0.000, -1.15192, -2.26893, 0.244346, +1.5708, +0.000), # Thunder Not used
                 (+0.000, -2.1293, 2.44346, -3.49066, -1.5708, +0.000)] # Lightning Not used
-        # ur_homes = [(-180, -130, 130, -180, -90, 0), # Thunder
-        #            (-180, -50, -130, -0, 90, +0)] # Lightning
-
-        ur_homes = [(-180, -130, 130, -180, -90, -90), # Thunder
-                    (-180, -50, -130, -0, 90, +90)] # Lightning
+        ur_homes = [(-180, -130, 130, -180, -90, -90), # Thunder - Todo
+                    (-3.1017372608184814, -2.403580904006958, -2.077352285385132, 
+                     -0.22695858776569366, 0.0014603278832510114, -0.0012162367347627878)] # Lighning - Correct
         
         col = {}
         homes = {}
         for name, color, ur_home, spark_home in zip(arms, colors, ur_homes, spark_homes):
             col[name] = color
-            homes[name] = [angle/180*3.14159 for angle in ur_home]
+            homes[name] = [angle for angle in ur_home]
             homes[name+"_spark"] = spark_home # Not used
 
         root = tk.Tk()

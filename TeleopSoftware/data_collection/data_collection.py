@@ -21,8 +21,8 @@ import numpy as np
 
 # ==============================================================
 # TODO:
-# - add new camera
-# - add action
+# - add new camera (wrist + third person)
+# - add action (the action SPARK sends to the UR5 arm)
 # - store data in a shared folder
 # ===============================================================
 

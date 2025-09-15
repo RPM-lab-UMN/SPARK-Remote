@@ -1,8 +1,12 @@
 # SPARK Remote
-This folder contains all the software required for running the SPARK platoform and connecting to a Universal Robots arm. 
+This folder contains all the software required for running the SPARK platform and connecting to a Universal Robots arm. 
 
 ## Conda Environment
 TODO
+
+## Setup
+1. Follow setup steps for Mamba + ROS2 https://robostack.github.io/GettingStarted.html
+2. Run SPARK-Remote/install.sh (./install.sh)
 
 ## Key Files
 - [./launch.py](./launch.py) > The graphical interface script responsible for connecting to the UR arms via RTDE. This subscribes to SPARK and other ROS2 topics for teleoperation, and publishes information about the arms. Helper files are found in [./launch_helpers/](./launch_helpers/). 
@@ -14,6 +18,10 @@ TODO
 - [./launch_devs.py](./launch_devs.py) Launches controller scripts for SPARKS and other USB perefrials (not haptic gloves). This will automatically detect the devices. 
 - [./launch_haptic_devs.py](./launch_haptic_devs.py) Launches the controllers for the haptic gloves. 
 
+## Starting SPARK-Remote
+1. Turn on UR5e arms
+2. Run [./launch_devs.py](./launch_devs.py) and make sure the arms show up as expected
+3. Run [./launch.py](./launch.py) and run the arm (e.g. press "Run Spark")
 
 ## Device Interfaces
 - [./UR/](./UR/) > A wrapper around the RTDE interface for Universal Robotics arms. Our repository uses the addtional sensing capabilities of the *e* models (ie. UR5e). Our arms are configured for use with RobotIQ 2F-85 grippers. 

@@ -21,14 +21,12 @@ import numpy as np
 
 # ==============================================================
 # TODO:
-# - add new camera (wrist + third person)
 # - add action (the action SPARK sends to the UR5 arm)
-# - store data in a shared folder
 # ===============================================================
 
 
 # data collection settings
-save_dir = "./real_world_data/pick_green_into_bowl/"
+save_dir = "/data/UR_teleop"
 LANG_INSTRUCTION = "pick the green block into the black bowl."
 os.makedirs(save_dir, exist_ok=True)
 step_hz = 15
@@ -91,8 +89,8 @@ def preprocess_frame(frames):
         rpy_list.append(eef_pose["orientation_rpy"])
         gripper_list.append(frame.get("gripper_state", 0))  # Default to 0 if gripper_state is missing
 
-    normalized_gripper_list = [x / 255.0 for x in gripper_list] # Normalize gripper state to [0, 1]
-    actions = compute_eef_action(pos_list, rpy_list, normalized_gripper_list)
+    normalized_gripper_list = [x / 255.0 for x in gripper_list]  # Normalize gripper state to [0, 1]
+    actions = compute_eef_action(pos_list, rpy_list, normalized_gripper_list)  # calculated from s{t+1} - s{t} (NOT the actions SPARK sends to the UR5 arms but ideally they are the same)
 
     # print('actions:', actions)
     
@@ -121,7 +119,12 @@ def compute_eef_action(pos_list, rpy_list, gripper_list):
 
 rclpy.init()
 state_sub = StateSubscriber()
-cam = RealSenseCamera()
+# Replace with your camera serial numbers
+WRIST_CAMERA_SERIAL = '123'
+SCENE_CAMERA_SERIAL = '456'
+wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL)
+scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL)
+cams = [wrist_cam, scene_cam]
 
 
 # # Start MultiThreadedExecutor in a background thread
@@ -177,7 +180,8 @@ def main():
 
     finally:
         restore_terminal_mode(old_terminal_settings)
-        cam.stop()
+        for cam in cams:
+            cam.stop()
         state_sub.destroy_node()
         rclpy.shutdown()
 
@@ -190,13 +194,17 @@ def collect_one_frame():
     ):
         return None
 
-    color_image = cam.get_color_frame()  # BGR
-    color_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
+    wrist_color_image = wrist_cam.get_color_frame()  # BGR
+    wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
+
+    scene_color_image = scene_cam.get_color_frame()  # BGR
+    scene_color_image = cv2.cvtColor(scene_color_image, cv2.COLOR_BGR2RGB)
 
     timestamp = time.time()
     frame = {
         "timestamp": timestamp,
-        "rgb": color_image,
+        "rgb_wrist": wrist_color_image,
+        "rgb_scene": scene_color_image,
         "joint_positions": state_sub.joint_positions,
         "eef_pose": {
             "position": state_sub.eef_pose[:3],

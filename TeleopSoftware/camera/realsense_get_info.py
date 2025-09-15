@@ -46,8 +46,8 @@ if __name__ == '__main__':
     sn = get_serial_numbers()
     for i, s in enumerate(sn):
         print(f"Camera {i}: {s}")
-        print(get_valid_configs(s))
-        depth_image, color_image = get_images(s)
-        cv2.imshow('Depth', depth_image)
-        cv2.imshow('Color', color_image)
-        cv2.waitKey(0)
+        # print(get_valid_configs(s))
+        # depth_image, color_image = get_images(s)
+        # cv2.imshow('Depth', depth_image)
+        # cv2.imshow('Color', color_image)
+        # cv2.waitKey(0)

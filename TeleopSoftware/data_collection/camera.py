@@ -4,9 +4,11 @@ import numpy as np
 import cv2
 
 class RealSenseCamera:
-    def __init__(self, width=640, height=480, fps=30):
+    def __init__(self, serial_number=None, width=640, height=480, fps=30):
         self.pipeline = rs.pipeline()
         self.config = rs.config()
+        if serial_number:
+            self.config.enable_device(serial_number)
         self.config.enable_stream(rs.stream.color, width, height, rs.format.bgr8, fps)
         self.pipeline.start(self.config)
 
@@ -23,7 +25,8 @@ class RealSenseCamera:
 
 
 if __name__ == "__main__":
-    cam = RealSenseCamera()
+    # Replace '123' with the actual serial number of your camera.
+    cam = RealSenseCamera(serial_number='123')
     print("Press 'q' to quit.")
     try:
         while True:

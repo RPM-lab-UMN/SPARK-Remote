@@ -4,5 +4,5 @@
 - [./check_pickle.py ](./check_pickle.py) > Inspects trajectory pickle files, saves videos from RGB image observations 
 
 ## Collecting data
-1. Inside data_collection.py, change the "data collection settings" variables if needed
+1. Inside data_collection.py, change the "data collection settings" variables as needed
 2. 

@@ -6,7 +6,11 @@ TODO
 
 ## Setup
 1. Follow setup steps for Mamba + ROS2 https://robostack.github.io/GettingStarted.html
-2. Run SPARK-Remote/install.sh (./install.sh)
+2. Run SPARK-Remote/install.sh (./install.sh) (Note: if using L515, we had to use pyrealsense2==2.54.2.5684)
+
+### Note about realsense-viewer
+realsense-viewer is a helpful tool for visualizing realsense cameras but I believe L515 is incompatible with Ubuntu 24.04 because the documentation says the latest librealsense SDK that supports L515 is v2.54.2 but this is incompatible with Ubuntu 24.04. Regardless, it is not necessary for this project.  
+Source: https://github.com/IntelRealSense/librealsense/releases
 
 ## Key Files
 - [./launch.py](./launch.py) > The graphical interface script responsible for connecting to the UR arms via RTDE. This subscribes to SPARK and other ROS2 topics for teleoperation, and publishes information about the arms. Helper files are found in [./launch_helpers/](./launch_helpers/). 

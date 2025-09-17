@@ -21,7 +21,7 @@ import numpy as np
 
 # ==============================================================
 # TODO:
-# - add action (the action SPARK sends to the UR5 arm)
+# - add action (the action SPARK sends to the UR5 arm; I believe it comes from ros_data -> angles (see arms.py))
 # ===============================================================
 
 
@@ -120,8 +120,8 @@ def compute_eef_action(pos_list, rpy_list, gripper_list):
 rclpy.init()
 state_sub = StateSubscriber()
 # Replace with your camera serial numbers
-WRIST_CAMERA_SERIAL = '123'
-SCENE_CAMERA_SERIAL = '456'
+WRIST_CAMERA_SERIAL = '128422270284'  # D405
+SCENE_CAMERA_SERIAL = 'f1380660'  # L515
 wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL)
 scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL)
 cams = [wrist_cam, scene_cam]

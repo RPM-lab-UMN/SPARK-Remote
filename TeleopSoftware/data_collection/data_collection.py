@@ -21,7 +21,7 @@ import numpy as np
 
 # ==============================================================
 # TODO:
-# - add action (the action SPARK sends to the UR5 arm; I believe it comes from ros_data -> angles (see arms.py))
+# - add action (the action SPARK sends to the UR5 arm; I believe it comes from ros_data -> angles (see run.py))
 # ===============================================================
 
 
@@ -31,6 +31,9 @@ LANG_INSTRUCTION = "pick the green block into the black bowl."
 os.makedirs(save_dir, exist_ok=True)
 step_hz = 15
 step_dt = 1.0 / step_hz
+# Replace with your camera serial numbers
+WRIST_CAMERA_SERIAL = '128422270284'  # D405
+SCENE_CAMERA_SERIAL = 'f1380660'  # L515
 
 
 # ========== function：Non-blocking keyboard input ==========
@@ -59,10 +62,14 @@ class StateSubscriber(Node):
         self.eef_pose = None
         self.joint_positions = None
         self.gripper_value = None
+        self.spark_command_angles = None
+        self.spark_command_gripper = None       
 
         self.create_subscription(Float32MultiArray, '/lightning_cartesian_eef', self.eef_callback, 10)
         self.create_subscription(Float32MultiArray, '/lightning_q', self.q_callback, 10)
         self.create_subscription(Int32, '/lightning_gripper', self.gripper_callback, 10)
+        self.create_subscription(Float32MultiArray, '/lightning_spark_command_angles', self.spark_angles_callback, 10)
+        self.create_subscription(Float32, '/lightning_spark_command_gripper', self.spark_gripper_callback, 10)        
 
     def eef_callback(self, msg):
         self.eef_pose = msg.data
@@ -73,6 +80,11 @@ class StateSubscriber(Node):
     def gripper_callback(self, msg):
         self.gripper_value = msg.data
 
+    def spark_angles_callback(self, msg):
+        self.spark_command_angles = msg.data
+
+    def spark_gripper_callback(self, msg):
+        self.spark_command_gripper = msg.data
 
 # ============= preprocess function ===========
 def preprocess_frame(frames):
@@ -119,9 +131,6 @@ def compute_eef_action(pos_list, rpy_list, gripper_list):
 
 rclpy.init()
 state_sub = StateSubscriber()
-# Replace with your camera serial numbers
-WRIST_CAMERA_SERIAL = '128422270284'  # D405
-SCENE_CAMERA_SERIAL = 'f1380660'  # L515
 wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL)
 scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL)
 cams = [wrist_cam, scene_cam]
@@ -190,7 +199,9 @@ def collect_one_frame():
     if (
         state_sub.eef_pose is None or
         state_sub.joint_positions is None or
-        state_sub.gripper_value is None
+        state_sub.gripper_value is None or
+        state_sub.spark_command_angles is None or
+        state_sub.spark_command_gripper is None
     ):
         return None
 
@@ -212,6 +223,8 @@ def collect_one_frame():
         },
         "gripper_state": state_sub.gripper_value,
         "lang_instruction": LANG_INSTRUCTION,
+        "spark_command_angles": state_sub.spark_command_angles,
+        "spark_command_gripper": state_sub.spark_command_gripper        
     }
     return frame
 

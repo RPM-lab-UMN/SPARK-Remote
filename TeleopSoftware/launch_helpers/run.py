@@ -58,6 +58,8 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                 else:
                     gripper = np.clip((2.1-angles[6]*2), 0, 1)
                 gripper = round(gripper*10)/10
+                pubs[arm.lower()+"_spark_command_angles"].publish(Float32MultiArray(data=angles))
+                pubs[arm.lower()+"_spark_command_gripper"].publish(Float32(data=[gripper]))                
                 
                 # Calculate forward kinematics: 
                 ur_Q = URs.getActualQ(arm)

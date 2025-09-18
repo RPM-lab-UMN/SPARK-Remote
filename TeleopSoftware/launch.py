@@ -49,6 +49,8 @@ class GUI(Node):
             pubs[arm+"_safety_mode"] = self.create_publisher(Int32, f"/{arm.lower()}_safety_mode", 10)
             # # Force offset
             pubs[arm+"_force_offset"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_force_offset", 10)
+            pubs[arm.lower()+"_spark_command_angles"] = self.create_publisher(Float32MultiArray, f"/{arm.lower()}_spark_command_angles", 10)
+            pubs[arm.lower()+"_spark_command_gripper"] = self.create_publisher(Float32, f"/{arm.lower()}_spark_command_gripper", 10)
 
         colors = ["light blue", "light green"]
         spark_homes = [(+0.000, -1.15192, -2.26893, 0.244346, +1.5708, +0.000), # Thunder Not used

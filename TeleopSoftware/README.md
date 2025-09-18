@@ -25,7 +25,7 @@ Source: https://github.com/IntelRealSense/librealsense/releases
 ## Starting SPARK-Remote
 1. Turn on UR5e arms
 2. Run [./launch_devs.py](./launch_devs.py) and make sure the arms show up as expected
-3. Run [./launch.py](./launch.py) and run the arm (e.g. press "Run Spark")
+3. Run [./launch.py](./launch.py) and press "Run Spark" in the GUI for each arm you are using
 
 ## Device Interfaces
 - [./UR/](./UR/) > A wrapper around the RTDE interface for Universal Robotics arms. Our repository uses the addtional sensing capabilities of the *e* models (ie. UR5e). Our arms are configured for use with RobotIQ 2F-85 grippers. 

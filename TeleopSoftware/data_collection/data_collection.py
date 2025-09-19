@@ -21,13 +21,12 @@ import numpy as np
 
 # ==============================================================
 # TODO:
-# - add action (the action SPARK sends to the UR5 arm; I believe it comes from ros_data -> angles (see run.py))
 # ===============================================================
 
 
 # data collection settings
-save_dir = "/data/UR_teleop"
-LANG_INSTRUCTION = "pick the green block into the black bowl."
+save_dir = "/data/UR_teleop/pickblueblock_blackbowl"
+LANG_INSTRUCTION = "pick the blue block into the black bowl."
 os.makedirs(save_dir, exist_ok=True)
 step_hz = 15
 step_dt = 1.0 / step_hz
@@ -208,9 +207,11 @@ def collect_one_frame():
         return None
 
     wrist_color_image = wrist_cam.get_color_frame()  # BGR
+    wrist_color_image = cv2.resize(wrist_color_image, (320, 240))
     wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
 
     scene_color_image = scene_cam.get_color_frame()  # BGR
+    scene_color_image = cv2.resize(scene_color_image, (320, 240))
     scene_color_image = cv2.cvtColor(scene_color_image, cv2.COLOR_BGR2RGB)
 
     timestamp = time.time()

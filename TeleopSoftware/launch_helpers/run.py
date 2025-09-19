@@ -58,8 +58,6 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                 else:
                     gripper = np.clip((2.1-angles[6]*2), 0, 1)
                 gripper = round(gripper*10)/10
-                pubs[arm.lower()+"_spark_command_angles"].publish(Float32MultiArray(data=angles))
-                pubs[arm.lower()+"_spark_command_gripper"].publish(Float32(data=[gripper]))                
                 
                 # Calculate forward kinematics: 
                 ur_Q = URs.getActualQ(arm)
@@ -97,9 +95,11 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                             if control_modes[arm] == 'Spark':
                                 URs.servoJ(arm, (angles[:6], 0.0, 0.0, ur_time, ur_lookahead_time, ur_gain))
                                 URs.get_gripper(arm).set(int(gripper*255))
+                                pubs[arm.lower()+"_spark_command_angles"].publish(Float32MultiArray(data=angles[:6]))
+                                pubs[arm.lower()+"_spark_command_gripper"].publish(Float32(data=gripper))                                  
                 
                 if control_modes[arm] == 'Optimization':
-                    # print("Optimization")
+                    # print("Optimization")                      
                     optimize.set_spark_angle(arm, angles)
                     optimize.set_enable(ros_data[enable_topic])
                     if ros_data[enable_topic]:

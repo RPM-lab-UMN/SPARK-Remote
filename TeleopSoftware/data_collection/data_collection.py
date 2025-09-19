@@ -133,6 +133,8 @@ rclpy.init()
 state_sub = StateSubscriber()
 wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL)
 scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL)
+print("Wrist camera initialized:", WRIST_CAMERA_SERIAL)
+print("Scene camera initialized:", SCENE_CAMERA_SERIAL)
 cams = [wrist_cam, scene_cam]
 
 

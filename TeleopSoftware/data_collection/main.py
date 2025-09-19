@@ -3,8 +3,8 @@ import numpy as np
 import time
 
 # Initialize the RobotController for Lightning
-lightning = RobotController('lightning', robot_ip='10.33.55.90', need_control=True, need_gripper=False)
-lightning = RobotController('thunder', robot_ip='10.33.55.89', need_control=True, need_gripper=False)
+lightning = RobotController('lightning', robot_ip='10.33.55.90', need_control=True, need_gripper=True)
+# thunder = RobotController('thunder', robot_ip='10.33.55.89', need_control=True, need_gripper=False)
 print("Lightning Initialized")
 
 def print_curr_positions():
@@ -22,7 +22,7 @@ def print_curr_positions():
     print(f"\n[ROBOT] Current EEF Pose: {curr_eef_pose}")
     print(f"[ROBOT] Joint angles: {curr_joint_angles}")
 
-FLAG_FREEDRIVE = True
+FLAG_FREEDRIVE = False
 if FLAG_FREEDRIVE:
     print_curr_positions()
     lightning.freeDrive()
@@ -31,8 +31,8 @@ if FLAG_FREEDRIVE:
 FLAG_MOVE_HOME = True
 if FLAG_MOVE_HOME:    
     input("Press Enter to go to Home Position & close gripper...")
-    lightning.go_home()
-    lightning.gripper_close()
+    #lightning.go_home()
+    lightning.gripper_close(150)
     print(f"Joint angles: {lightning.get_joint_angles()}")
 
 FLAG_MOVE_L = False

@@ -25,7 +25,7 @@ def print_summary(traj):
         for i in range(len(frames)-1, len(frames)):
             sample_frame = frames[i]
             print("\nExample frame keys:", list(sample_frame.keys()))
-            print("RGB image shape:", sample_frame['rgb'].shape)
+            print("RGB image shape:", sample_frame['rgb_wrist'].shape)
             print("Joint positions:", sample_frame['joint_positions'])
             print("EE pose:", sample_frame['eef_pose'])
             if 'gripper_state' in sample_frame:
@@ -43,7 +43,7 @@ def play_and_save_video(traj, save_path='output_video.mp4', fps=10):
         return
 
     # Determine image dimensions
-    h, w, _ = frames[0]['rgb'].shape
+    h, w, _ = frames[0]['rgb_wrist'].shape
     print(f"Video size: {w}x{h}")
 
     # Create a video writer
@@ -51,7 +51,7 @@ def play_and_save_video(traj, save_path='output_video.mp4', fps=10):
     video_writer = cv2.VideoWriter(save_path, fourcc, fps, (w, h))
 
     for idx, frame in enumerate(frames):
-        rgb = frame['rgb']  # (H, W, 3), RGB
+        rgb = frame['rgb_wrist']  # (H, W, 3), RGB
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)  # Convert to BGR for cv2 display
         video_writer.write(bgr)
 

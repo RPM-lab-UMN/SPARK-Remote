@@ -7,7 +7,10 @@
 1. Inside data_collection.py, change the "data collection settings" variables as needed
 2. Run data_collection.py
 3. Press 'Run Spark' and get the arm into control mode
-4. Press 's' to record...
+4. Press 's' to record, 'e' to stop, etc.
+
+## Convert to LeRobot: 
+Change necessary fields in [./check_pickle.py ](./check_pickle.py) and run.
 
 ## Troubleshooting
 - [./test_camera.py ](./test_camera.py) > Script for testing your cameras

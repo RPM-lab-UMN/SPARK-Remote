@@ -150,10 +150,12 @@ def process_and_convert_to_lerobot_format(
                 "observation.state": {
                     "mean": states_tensor.mean(axis=0).tolist(), "std": states_tensor.std(axis=0).tolist(),
                     "min": states_tensor.min(axis=0).values.tolist(), "max": states_tensor.max(axis=0).values.tolist(),
+                    "count": [states_tensor.shape[0]],
                 },
                 "actions": {
                     "mean": actions_tensor.mean(axis=0).tolist(), "std": actions_tensor.std(axis=0).tolist(),
                     "min": actions_tensor.min(axis=0).values.tolist(), "max": actions_tensor.max(axis=0).values.tolist(),
+                    "count": [actions_tensor.shape[0]],
                 }
             }
         }
@@ -246,13 +248,13 @@ def process_and_convert_to_lerobot_format(
 
 if __name__ == '__main__':
     MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl"
-    OUTPUT_DIR = "./lerobot_datasets_v2_1/pickblueblock_blackbowl"
+    OUTPUT_DIR = "/home/liao0241/lerobot_datasets_v2_1/pickblueblock_blackbowl"
     MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl"
 
     process_and_convert_to_lerobot_format(
         data_dir = MY_DATA_DIR, 
         output_dir = OUTPUT_DIR,
         save_locally=True,
-        push_to_hub=False,
+        push_to_hub=True,
         hf_repo_id=MY_HF_REPO_ID,
     )

@@ -8,10 +8,11 @@ import datasets
 import imageio.v2 as imageio
 
 # --- User-configurable parameters ---
-# You can adjust these to match your specific data.
+# Adjust these to match your specific data.
 CONFIG = {
     "robot_type": "UR5e with Robotiq 2F-85 Gripper",
     "fps": 30,
+    "chunk_size": 100, # Number of episodes per chunk; may need to adjust for large datasets
     "image_height": 240,
     "image_width": 320,
     "state_names": [
@@ -32,16 +33,14 @@ def process_and_convert_to_lerobot_format(
     data_dir: str,
     output_dir: str,
     hf_repo_id: str = None,
-    save_locally: bool = True,
     push_to_hub: bool = False,
 ):
     """
     Loads trajectory data, processes it into the full LeRobot v2.1 format,
     saves it locally and/or pushes to hub.
     """
-    if save_locally:
-        output_path = Path(output_dir)
-        output_path.mkdir(exist_ok=True)
+    output_path = Path(output_dir)
+    output_path.mkdir(exist_ok=True)
     
     videos_path = output_path / "videos"
     meta_path = output_path / "meta"
@@ -52,11 +51,12 @@ def process_and_convert_to_lerobot_format(
     if stats_file.exists():
         stats_file.unlink()
 
-    all_steps = []
     episode_metadata = []
     tasks_metadata = []
     task_to_id = {}
     global_idx = 0
+    # For generating consistent timestamps across episodes
+    global_frame_count = 0 # TODO: Remove this once timestamp is fixed in data_collection.py
     
     pkl_files = sorted(Path(data_dir).glob("*.pkl"))
     print(f"Found {len(pkl_files)} .pkl files to process.")
@@ -70,20 +70,42 @@ def process_and_convert_to_lerobot_format(
 
         meta, episode_data = all_data['meta'], all_data['frames']
         
+        # --- Setting up directories and paths for videos ---
+        # Calculate the chunk index for the current episode
+        episode_chunk = episode_idx // CONFIG["chunk_size"]
+
+        # Define the new camera keys and create their directories
+        wrist_key = "observation.image_wrist"
+        scene_key = "observation.image_scene"
+        wrist_video_dir = videos_path / f"chunk-{episode_chunk:03d}" / wrist_key
+        scene_video_dir = videos_path / f"chunk-{episode_chunk:03d}" / scene_key
+        wrist_video_dir.mkdir(parents=True, exist_ok=True)
+        scene_video_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Define the full path for the final video files
+        wrist_mp4_path = wrist_video_dir / f"episode_{episode_idx:06d}.mp4"
+        scene_mp4_path = scene_video_dir / f"episode_{episode_idx:06d}.mp4"
+
         wrist_frames, scene_frames = [], []
         episode_states, episode_actions = [], []
         episode_tasks = set()
 
-        # Loop through timesteps to create transitions and collect data
+        episode_steps = []
+
+        # --- Loop through timesteps to create transitions and collect data ---
         for frame_idx, step in enumerate(episode_data):
+            # TO DO: Remove once timestamp is fixed in data_collection.py script
+            step['timestamp'] = frame_idx / CONFIG["fps"] # generates perfect, evenly spaced timestamps
             task = step['lang_instruction']
             episode_tasks.add(task)
             if task not in task_to_id:
                 task_id = len(task_to_id)
                 task_to_id[task] = task_id
                 tasks_metadata.append({"task_index": task_id, "task": task})
-            wrist_frames.append(step['rgb_wrist'])
-            scene_frames.append(step['rgb_scene'])
+            wrist_frame = step['rgb_wrist']
+            scene_frame = step['rgb_scene']
+            wrist_frames.append(wrist_frame)
+            scene_frames.append(scene_frame)
 
             if frame_idx < len(episode_data) - 1:
                 step_t = episode_data[frame_idx]
@@ -92,7 +114,7 @@ def process_and_convert_to_lerobot_format(
                     [step_t['eef_pose']['position'], step_t['eef_pose']['orientation_rpy']]
                     ).astype(np.float32)
 
-                actions = np.concatenate([
+                action = np.concatenate([
                     np.array(step_t['spark_command_angles'], dtype=np.float32),
                     np.array([step_t['spark_command_gripper']], dtype=np.float32)
                 ])
@@ -108,42 +130,49 @@ def process_and_convert_to_lerobot_format(
                 # ])
                 
                 episode_states.append(state_t)
-                episode_actions.append(actions)
+                episode_actions.append(action)
                 
-                video_filename = f"episode_{episode_idx}.mp4"
-                wrist_video_path = f"videos/wrist_{video_filename}"
-                scene_video_path = f"videos/scene_{video_filename}"
-
-                all_steps.append({
+                episode_steps.append({
                     'index': global_idx,
                     'episode_index': episode_idx,
                     'frame_index': frame_idx,
                     'timestamp': step_t['timestamp'],
-                    'observation': {
-                        'image_wrist': {'path': wrist_video_path, 'timestamp': step_t['timestamp']},
-                        'image_scene': {'path': scene_video_path, 'timestamp': step_t['timestamp']},
-                        'state': state_t,
-                    },
-                    'actions': actions,
-                    'next': {
-                        # 'observation': {
-                        #     'image_wrist': {'path': wrist_video_path, 'timestamp': step_t_plus_1['timestamp']},
-                        #     'image_scene': {'path': scene_video_path, 'timestamp': step_t_plus_1['timestamp']},
-                        #     'state': state_t_plus_1,
-                        # },
-                        'done': frame_idx == len(episode_data) - 2,
-                    },
+                    'observation.image_wrist': step['rgb_wrist'],
+                    'observation.image_scene': step['rgb_scene'],
+                    'observation.state': state_t,
+                    # 'observation': {
+                    #     # Note: The video paths here should be the final, resolved paths
+                    #     'image_wrist': {'path': str(wrist_mp4_path), 'timestamp': step_t['timestamp']},
+                    #     'image_scene': {'path': str(scene_mp4_path), 'timestamp': step_t['timestamp']},
+                    #     'state': state_t,
+                    # },
+                    'action': action,
+                    'next.done': frame_idx == len(episode_data) - 2,
                     'task': task,
+                    'task_index': task_id,
                 })
                 global_idx += 1
         
-        imageio.mimsave(videos_path / f"wrist_episode_{episode_idx}.mp4", wrist_frames, fps=CONFIG["fps"])
-        imageio.mimsave(videos_path / f"scene_episode_{episode_idx}.mp4", scene_frames, fps=CONFIG["fps"])
+        # --- Save this episode's data to a Parquet file ---
+        if episode_steps: # Ensure the episode has steps
+            # Create the specific chunk directory for the data
+            data_chunk_dir = output_path/"data"/f"chunk-{episode_chunk:03d}"
+            data_chunk_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Define the output path for this episode's parquet file
+            parquet_path = data_chunk_dir/f"episode_{episode_idx:06d}.parquet"
+            
+            # Create a Dataset for this episode only and save it
+            episode_dataset = datasets.Dataset.from_list(episode_steps)
+            episode_dataset.to_parquet(parquet_path)
+        
+        imageio.mimsave(wrist_mp4_path, wrist_frames, fps=CONFIG["fps"])
+        imageio.mimsave(scene_mp4_path, scene_frames, fps=CONFIG["fps"])
 
         states_tensor = torch.from_numpy(np.array(episode_states))
         actions_tensor = torch.from_numpy(np.array(episode_actions))
         
-        # Save episode statistics
+        # --- Save episode statistics ---
         episode_stats = {
             "episode_index": episode_idx,
             "stats": {
@@ -152,7 +181,7 @@ def process_and_convert_to_lerobot_format(
                     "min": states_tensor.min(axis=0).values.tolist(), "max": states_tensor.max(axis=0).values.tolist(),
                     "count": [states_tensor.shape[0]],
                 },
-                "actions": {
+                "action": {
                     "mean": actions_tensor.mean(axis=0).tolist(), "std": actions_tensor.std(axis=0).tolist(),
                     "min": actions_tensor.min(axis=0).values.tolist(), "max": actions_tensor.max(axis=0).values.tolist(),
                     "count": [actions_tensor.shape[0]],
@@ -165,19 +194,16 @@ def process_and_convert_to_lerobot_format(
         episode_metadata.append({
             "episode_index": episode_idx,
             "tasks": list(episode_tasks), # List of unique tasks for this episode
-            "length": len(episode_data),
+            "length": len(episode_steps),
         })
-
-    # --- Create the Hugging Face Dataset from the collected steps ---
-    hf_dataset = datasets.Dataset.from_list(all_steps)
-    print("\nDataset created successfully!")
-    print(hf_dataset)
 
     # --- Assemble and save all metadata files ---
     print("\nAssembling and saving metadata...")
     
     # 1. info.json
     total_episodes = len(pkl_files)
+    state_shape = len(CONFIG["state_names"])
+    action_shape = len(CONFIG["action_names"])
     features_dict = {
         "index": {"dtype": "int64", "shape": [1]},
         "episode_index": {"dtype": "int64", "shape": [1]},
@@ -185,11 +211,11 @@ def process_and_convert_to_lerobot_format(
         "timestamp": {"dtype": "float32", "shape": [1]},
         "task_index": {"dtype": "int64", "shape": [1]},
         "observation.state": {
-            "dtype": "float32", "shape": list(np.array(hf_dataset[0]['observation']['state']).shape),
+            "dtype": "float32", "shape": [state_shape],
             "names": CONFIG["state_names"]
         },
-        "actions": {
-            "dtype": "float32", "shape": list(np.array(hf_dataset[0]['actions']).shape),
+        "action": {
+            "dtype": "float32", "shape": [action_shape],
             "names": CONFIG["action_names"]
         },
         "next.done": {"dtype": "bool", "shape": [1]},
@@ -210,10 +236,14 @@ def process_and_convert_to_lerobot_format(
         "robot_type": CONFIG["robot_type"],
         "fps": CONFIG["fps"],
         "total_episodes": total_episodes,
-        "total_frames": hf_dataset.num_rows, # Total transitions, not raw frames
+        "total_frames": global_idx, # Total transitions, not raw frames
         "total_tasks": len(tasks_metadata),
         "total_videos": total_episodes * 2,
+        "total_chunks": (total_episodes + CONFIG["chunk_size"] - 1) // CONFIG["chunk_size"],
+        "chunks_size": CONFIG["chunk_size"],
         "splits": {"train": f"0:{total_episodes}"}, # Default split uses all data for training
+        "data_path": "data/chunk-{episode_chunk:03d}/episode_{episode_index:06d}.parquet",
+        "video_path": "videos/chunk-{episode_chunk:03d}/{video_key}/episode_{episode_index:06d}.mp4",
         "features": features_dict,
     }
     with (meta_path / "info.json").open("w") as f:
@@ -231,30 +261,32 @@ def process_and_convert_to_lerobot_format(
             
     # 4. episodes_stats.jsonl was already created in the loop.
 
-    # --- Save main dataset to disk ---
-    if save_locally:
-        print(f"\nSaving main dataset to disk at '{output_path}'...")
-        hf_dataset.save_to_disk(str(output_path))
-        print("\n✅ Dataset saved locally in LeRobot v2.1 format.")
 
     # --- Push to Hugging Face Hub ---
     if push_to_hub:
+        from huggingface_hub import HfApi
         if hf_repo_id is None:
             raise ValueError("hf_repo_id must be provided to push to the Hub.")
         print(f"\nPushing dataset to the Hub at '{hf_repo_id}'...")
-        hf_dataset.push_to_hub(hf_repo_id)
+        
+        api = HfApi()
+        # api.create_tag(hf_repo_id, tag=info["codebase_version"], repo_type="dataset")
+        api.upload_folder(
+            folder_path=str(output_path),
+            repo_id=hf_repo_id,
+            repo_type="dataset",
+        )
         print("\n✅ Dataset pushed to the Hub successfully.")
 
 
 if __name__ == '__main__':
     MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl"
-    OUTPUT_DIR = "/home/liao0241/lerobot_datasets_v2_1/pickblueblock_blackbowl"
+    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_blackbowl"
     MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl"
 
     process_and_convert_to_lerobot_format(
         data_dir = MY_DATA_DIR, 
         output_dir = OUTPUT_DIR,
-        save_locally=True,
         push_to_hub=True,
         hf_repo_id=MY_HF_REPO_ID,
     )

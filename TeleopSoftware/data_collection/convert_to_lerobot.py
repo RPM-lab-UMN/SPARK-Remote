@@ -72,16 +72,16 @@ def process_and_convert_to_lerobot_format(
         
         wrist_frames, scene_frames = [], []
         episode_states, episode_actions = [], []
-        episode_instructions = set()
+        episode_tasks = set()
 
         # Loop through timesteps to create transitions and collect data
         for frame_idx, step in enumerate(episode_data):
-            instruction = step['lang_instruction']
-            episode_instructions.add(instruction)
-            if instruction not in task_to_id:
+            task = step['lang_instruction']
+            episode_tasks.add(task)
+            if task not in task_to_id:
                 task_id = len(task_to_id)
-                task_to_id[instruction] = task_id
-                tasks_metadata.append({"task_index": task_id, "task": instruction})
+                task_to_id[task] = task_id
+                tasks_metadata.append({"task_index": task_id, "task": task})
             wrist_frames.append(step['rgb_wrist'])
             scene_frames.append(step['rgb_scene'])
 
@@ -92,7 +92,7 @@ def process_and_convert_to_lerobot_format(
                     [step_t['eef_pose']['position'], step_t['eef_pose']['orientation_rpy']]
                     ).astype(np.float32)
 
-                action = np.concatenate([
+                actions = np.concatenate([
                     np.array(step_t['spark_command_angles'], dtype=np.float32),
                     np.array([step_t['spark_command_gripper']], dtype=np.float32)
                 ])
@@ -108,7 +108,7 @@ def process_and_convert_to_lerobot_format(
                 # ])
                 
                 episode_states.append(state_t)
-                episode_actions.append(action)
+                episode_actions.append(actions)
                 
                 video_filename = f"episode_{episode_idx}.mp4"
                 wrist_video_path = f"videos/wrist_{video_filename}"
@@ -124,7 +124,7 @@ def process_and_convert_to_lerobot_format(
                         'image_scene': {'path': scene_video_path, 'timestamp': step_t['timestamp']},
                         'state': state_t,
                     },
-                    'action': action,
+                    'actions': actions,
                     'next': {
                         # 'observation': {
                         #     'image_wrist': {'path': wrist_video_path, 'timestamp': step_t_plus_1['timestamp']},
@@ -133,7 +133,7 @@ def process_and_convert_to_lerobot_format(
                         # },
                         'done': frame_idx == len(episode_data) - 2,
                     },
-                    'instruction': instruction,
+                    'task': task,
                 })
                 global_idx += 1
         
@@ -151,7 +151,7 @@ def process_and_convert_to_lerobot_format(
                     "mean": states_tensor.mean(axis=0).tolist(), "std": states_tensor.std(axis=0).tolist(),
                     "min": states_tensor.min(axis=0).values.tolist(), "max": states_tensor.max(axis=0).values.tolist(),
                 },
-                "action": {
+                "actions": {
                     "mean": actions_tensor.mean(axis=0).tolist(), "std": actions_tensor.std(axis=0).tolist(),
                     "min": actions_tensor.min(axis=0).values.tolist(), "max": actions_tensor.max(axis=0).values.tolist(),
                 }
@@ -162,7 +162,7 @@ def process_and_convert_to_lerobot_format(
         
         episode_metadata.append({
             "episode_index": episode_idx,
-            "tasks": list(episode_instructions), # List of unique tasks for this episode
+            "tasks": list(episode_tasks), # List of unique tasks for this episode
             "length": len(episode_data),
         })
 
@@ -177,20 +177,20 @@ def process_and_convert_to_lerobot_format(
     # 1. info.json
     total_episodes = len(pkl_files)
     features_dict = {
-        "index": {"dtype": "int64"},
-        "episode_index": {"dtype": "int64"},
-        "frame_index": {"dtype": "int64"},
-        "timestamp": {"dtype": "float32"},
-        "instruction": {"dtype": "string"},
+        "index": {"dtype": "int64", "shape": [1]},
+        "episode_index": {"dtype": "int64", "shape": [1]},
+        "frame_index": {"dtype": "int64", "shape": [1]},
+        "timestamp": {"dtype": "float32", "shape": [1]},
+        "task_index": {"dtype": "int64", "shape": [1]},
         "observation.state": {
             "dtype": "float32", "shape": list(np.array(hf_dataset[0]['observation']['state']).shape),
             "names": CONFIG["state_names"]
         },
-        "action": {
-            "dtype": "float32", "shape": list(np.array(hf_dataset[0]['action']).shape),
+        "actions": {
+            "dtype": "float32", "shape": list(np.array(hf_dataset[0]['actions']).shape),
             "names": CONFIG["action_names"]
         },
-        "next.done": {"dtype": "bool"},
+        "next.done": {"dtype": "bool", "shape": [1]},
         "observation.image_wrist": {
             "dtype": "video", "shape": [CONFIG["image_height"], CONFIG["image_width"], 3],
             "names": ["height", "width", "channel"],

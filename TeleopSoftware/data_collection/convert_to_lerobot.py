@@ -102,8 +102,9 @@ def process_and_convert_to_lerobot_format(
                 task_id = len(task_to_id)
                 task_to_id[task] = task_id
                 tasks_metadata.append({"task_index": task_id, "task": task})
-            wrist_frame = step['rgb_wrist']
-            scene_frame = step['rgb_scene']
+            # Make sure images are uint8
+            wrist_frame = step['rgb_wrist'].astype(np.uint8)
+            scene_frame = step['rgb_scene'].astype(np.uint8)
             wrist_frames.append(wrist_frame)
             scene_frames.append(scene_frame)
 
@@ -114,6 +115,7 @@ def process_and_convert_to_lerobot_format(
                     [step_t['eef_pose']['position'], step_t['eef_pose']['orientation_rpy']]
                     ).astype(np.float32)
 
+                # TO DO: in the future, change to 'actions' as it is more friendly with openpi
                 action = np.concatenate([
                     np.array(step_t['spark_command_angles'], dtype=np.float32),
                     np.array([step_t['spark_command_gripper']], dtype=np.float32)

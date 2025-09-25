@@ -33,7 +33,11 @@ class GUI(Node):
             "Thunder": True,
             "Lightning": True,
         }
-        URs = UR(arms, ips, enable_grippers=True)
+        enable_gripper = {
+            "Thunder": False,
+            "Lightning": True
+        }
+        URs = UR(arms, ips, enable_gripper)
         optimize = UR5eForceControl(URs)
 
         pubs = dict()
@@ -55,7 +59,8 @@ class GUI(Node):
         colors = ["light blue", "light green"]
         spark_homes = [(+0.000, -1.15192, -2.26893, 0.244346, +1.5708, +0.000), # Thunder Not used
                 (+0.000, -2.1293, 2.44346, -3.49066, -1.5708, +0.000)] # Lightning Not used
-        ur_homes = [(-180, -130, 130, -180, -90, -90), # Thunder - Todo
+        ur_homes = [(2.9827942848205566, -0.8768788737109681, 1.5241177717791956,
+                     -1.3292976331761857, -0.011305634175435841, -0.8243311087237757), # Thunder - Correct
                     (-3.1017372608184814, -2.403580904006958, -2.077352285385132, 
                      -0.22695858776569366, 0.0014603278832510114, -0.0012162367347627878)] # Lighning - Correct
         

@@ -15,7 +15,8 @@ vr_start_pose = {}
 homes = {}
 
 # Offsets between Spark
-THUNDER_OFFSET = [-np.pi, -np.pi/2, 0.0, -np.pi/2, -np.pi, -1/2*np.pi, 0] # ToDo
+THUNDER_OFFSET = [ 4.08539617061615, -1.4729438349604607, 0.169709443046093,
+                  -1.8684723675251008, 3.197336435317993, 0.006048411130905151, 0] # ToDo
 LIGHTNING_OFFSET =  [-np.pi/2, -np.pi/2, 0.0, -np.pi/2, 0.0, -1/2*np.pi, 0] # Correct
 
 spark_enable = {}
@@ -287,8 +288,9 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
             speed = URs.get_receive(arm).getActualTCPSpeed()
             pubs[arm+"_speed"].publish(Float32MultiArray(data=speed))
 
-            gripper = URs.get_gripper(arm).get_current_position()
-            pubs[arm+"_gripper"].publish(Int32(data=gripper))
+            if URs.enable_grippers[arm]:
+                gripper = URs.get_gripper(arm).get_current_position()
+                pubs[arm+"_gripper"].publish(Int32(data=gripper))
 
             enable = spark_enable[arm] if arm in spark_enable else False
             pubs[arm+"_enable"].publish(Bool(data=enable))

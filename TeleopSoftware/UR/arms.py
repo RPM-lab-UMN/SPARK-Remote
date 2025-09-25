@@ -5,7 +5,7 @@ from UR.gripper import RobotiqGripper
 import time
 
 class UR:
-    def __init__(self, names, ip_addresses, enable_grippers=True):
+    def __init__(self, names, ip_addresses, enable_grippers):
         self.ur_dashboard = {}
         self.ur_control = {}
         self.ur_receive = {}
@@ -162,7 +162,7 @@ class UR:
             if name not in self.ur_grippers:
                 self.ur_grippers[name] = RobotiqGripper()
                 self.ur_grippers[name].connect(self.ips[name], 63352)
-                if self.enable_grippers:
+                if self.enable_grippers[name]:
                     self.ur_grippers[name].activate()
                     print(f"Connected to {name} gripper")
                 self.ur_grippers[name].set_enable(True)

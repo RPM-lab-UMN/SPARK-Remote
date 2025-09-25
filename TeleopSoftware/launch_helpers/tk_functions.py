@@ -79,6 +79,10 @@ def freedrive_fun(arm, fields, URs, colors, control_modes):
         freedrive[arm] = True
 
 def gripper_fun(arm, fields, URs, colors):
+    if URs.enable_grippers[arm] == False:
+        print(arm + ": No Gripper Enabled")
+        return
+    
     if arm in gripper:
         print(arm + ": Close Gripper")
         URs.get_gripper(arm).set(255)

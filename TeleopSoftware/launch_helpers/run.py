@@ -15,15 +15,30 @@ vr_start_pose = {}
 homes = {}
 
 # Offsets between Spark
-THUNDER_OFFSET = [ 4.08539617061615, -1.4729438349604607, 0.169709443046093,
-                  -1.8684723675251008, 3.197336435317993, 0.006048411130905151, 0] # ToDo
-LIGHTNING_OFFSET =  [-np.pi/2, -np.pi/2, 0.0, -np.pi/2, 0.0, -1/2*np.pi, 0] # Correct
+THUNDER_OFFSET = [0.7763979435,
+                  1.0897494555,
+                  1.6440466729,
+                  -2.6170407087,
+                  -2.5504885353,
+                  -2.1203041077,
+                  0] # Correct
+LIGHTNING_OFFSET =  [-1.0714452267,
+                     -4.5198532343,
+                     -1.4994599633,
+                     -0.7150524259,
+                     -0.7079258561,
+                      1.8766877016,
+                      0
+                      ] # Correct
 
 spark_enable = {}
 
 offset = [0,0,0,0]
 
 publish_ft = True
+
+def map_value(x, in_min=1.9, in_max=3.0, out_min=0, out_max=255):
+    return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min)
 
 def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
     if 'thunder_sm_log' in ros_data:
@@ -55,10 +70,9 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                     
                 angles = [angle + homes[arm][i] for i, angle in enumerate(angles)]
                 if arm == "Lightning":
-                    gripper = np.clip((-1.0-angles[6]*2), 0, 1)
+                    gripper = map_value(angles[6], in_min=1.9, in_max=3.0, out_min=0, out_max=1)    
                 else:
-                    gripper = np.clip((2.1-angles[6]*2), 0, 1)
-                gripper = round(gripper*10)/10
+                    gripper = map_value(angles[6], in_min=-1.26, in_max=-2.71, out_min=0, out_max=1) #ToDo
                 
                 # Calculate forward kinematics: 
                 ur_Q = URs.getActualQ(arm)

@@ -73,6 +73,9 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                     gripper = map_value(angles[6], in_min=1.9, in_max=3.0, out_min=0, out_max=1)    
                 else:
                     gripper = map_value(angles[6], in_min=-1.26, in_max=-2.71, out_min=0, out_max=1) #ToDo
+                gripper  = np.clip(gripper, 0, 1)
+                gripper = round(gripper*10)/10
+
                 
                 # Calculate forward kinematics: 
                 ur_Q = URs.getActualQ(arm)

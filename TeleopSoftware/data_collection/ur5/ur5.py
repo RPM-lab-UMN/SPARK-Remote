@@ -101,6 +101,10 @@ class RobotController:
         if self.gripper:
             self.gripper.set(int(value))
 
+    def get_current_position(self) -> int:
+        """Returns the current position as returned by the physical hardware."""
+        return self.gripper._get_var(self.gripper.POS)
+
 if __name__ == "__main__":
     robot = RobotController('thunder', need_control=True, need_gripper=False)
     print("Current pose:", robot.get_eff_pose())

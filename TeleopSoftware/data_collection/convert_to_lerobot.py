@@ -55,8 +55,6 @@ def process_and_convert_to_lerobot_format(
     tasks_metadata = []
     task_to_id = {}
     global_idx = 0
-    # For generating consistent timestamps across episodes
-    global_frame_count = 0 # TODO: Remove this once timestamp is fixed in data_collection.py
     
     pkl_files = sorted(Path(data_dir).glob("*.pkl"))
     print(f"Found {len(pkl_files)} .pkl files to process.")
@@ -110,7 +108,6 @@ def process_and_convert_to_lerobot_format(
 
             if frame_idx < len(episode_data) - 1:
                 step_t = episode_data[frame_idx]
-                # step_t_plus_1 = episode_data[frame_idx + 1]
                 eef_pose = np.concatenate(
                     [step_t['eef_pose']['position'], step_t['eef_pose']['orientation_rpy']]
                     ).astype(np.float32)
@@ -125,11 +122,6 @@ def process_and_convert_to_lerobot_format(
                     np.array(eef_pose, dtype=np.float32),
                     np.array([step_t['gripper_state']], dtype=np.float32)
                 ])
-                # state_t_plus_1 = np.concatenate([
-                #     np.array(step_t_plus_1['joint_positions'], dtype=np.float32),
-                #     np.array(step_t_plus_1['eef_pose'], dtype=np.float32),
-                #     np.array([step_t_plus_1['gripper_state']], dtype=np.float32)
-                # ])
                 
                 episode_states.append(state_t)
                 episode_actions.append(action)
@@ -142,12 +134,6 @@ def process_and_convert_to_lerobot_format(
                     'observation.image_wrist': step['rgb_wrist'],
                     'observation.image_scene': step['rgb_scene'],
                     'observation.state': state_t,
-                    # 'observation': {
-                    #     # Note: The video paths here should be the final, resolved paths
-                    #     'image_wrist': {'path': str(wrist_mp4_path), 'timestamp': step_t['timestamp']},
-                    #     'image_scene': {'path': str(scene_mp4_path), 'timestamp': step_t['timestamp']},
-                    #     'state': state_t,
-                    # },
                     'action': action,
                     'next.done': frame_idx == len(episode_data) - 2,
                     'task': task,

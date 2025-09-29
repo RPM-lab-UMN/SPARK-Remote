@@ -15,21 +15,26 @@ vr_start_pose = {}
 homes = {}
 
 # Offsets between Spark
-THUNDER_OFFSET = [0.7763979435,
-                  1.0897494555,
-                  1.6440466729,
-                  -2.6170407087,
-                  -2.5504885353,
-                  -2.1203041077,
-                  0] # Correct
-LIGHTNING_OFFSET =  [-1.0714452267,
-                     -4.5198532343,
-                     -1.4994599633,
-                     -0.7150524259,
-                     -0.7079258561,
-                      1.8766877016,
-                      0
-                      ] # Correct
+
+THUNDER_OFFSET = [ 0.8322513103485107,
+  1.3889789581298828,
+  1.4154774993658066,
+ -2.7204548865556717,
+ -2.634120313450694,
+ -2.2259570360183716,
+  0] # New
+
+
+
+LIGHTNING_OFFSET =  [-1.0215797424316406,
+ -4.490872740745544,
+ -1.4827108010649681,
+ -0.588315486907959,
+ -0.5356001891195774,
+  2.0629922747612,
+  0
+  ] # New
+
 
 spark_enable = {}
 
@@ -70,9 +75,9 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                     
                 angles = [angle + homes[arm][i] for i, angle in enumerate(angles)]
                 if arm == "Lightning":
-                    gripper = map_value(angles[6], in_min=1.9, in_max=3.0, out_min=0, out_max=1)    
+                    gripper = map_value(angles[6], in_min=1.6, in_max=3.0, out_min=0, out_max=1)    
                 else:
-                    gripper = map_value(angles[6], in_min=-1.26, in_max=-2.71, out_min=0, out_max=1) #ToDo
+                    gripper = map_value(angles[6], in_min=-2.71, in_max=-1.26, out_min=0, out_max=1) #ToDo
                 gripper  = np.clip(gripper, 0, 1)
                 gripper = round(gripper*10)/10
 

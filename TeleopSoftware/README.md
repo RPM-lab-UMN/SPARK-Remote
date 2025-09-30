@@ -46,7 +46,7 @@ Source: https://github.com/IntelRealSense/librealsense/releases
   - [./VR/VR_Offsets.py](./VR/VR_Offsets.py) > This program saves the initial offsets for the VR controllers. 
 - [./camera/](./camera/) > ROS2 Interfaces for cameras to publish image frames. 
   - [./camera/realsense.py](./camera/realsense.py) > Connects to Intel RealSense RGBD cameras by serial number. The configuration for each camera allows for controling the framerate, resolution and depth information. 
-    - [./camera/realsense_get_info.py](./camera/realsense_get_info.py) > This will print the serail number and valid configurations for each camera attatched to the system. 
+    - [./camera/realsense_get_info.py](./camera/realsense_get_info.py) > This will print the serial number and valid configurations for each camera attatched to the system. 
   - [./camera/generic.py](./camera/generic.py) > Connects to a generic V4L video stream. This can interface with standard USB webcams. 
 
 

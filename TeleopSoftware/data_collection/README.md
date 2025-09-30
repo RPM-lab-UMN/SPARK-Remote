@@ -10,7 +10,17 @@
 4. Press 's' to record, 'e' to stop, etc.
 
 ## Convert to LeRobot: 
-Change necessary fields in [./check_pickle.py ](./check_pickle.py) and run.
+Change necessary fields in [./convert_to_lerobot.py ](./convert_to_lerobot.py) and run.
+
+## Deployment
+In the TeleopSoftware/data_collection folder:
+1. ```pip install Pyro5```
+2. ```python -m Pyro5.nameserver```
+3. In another terminal, start a nameserver: ```pyro5-ns```
+4. Run ```python deploy.py```
+  
+In pi0_deploy.ipynb in openpi/examples/:
+1. Run the steps to setup, load model, initialize cameras, and run actual deployment.
 
 ## Troubleshooting
 - [./test_camera.py ](./test_camera.py) > Script for testing your cameras

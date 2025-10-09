@@ -86,22 +86,34 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                 ur_Q = URs.getActualQ(arm)
                 ur_pos = forward_6(ur_Q)[0]
                 spark_pos = forward_6(angles[:6])[0]
+
                 height, width, center = fields[arm]['hwc']
                 # for angle in spark_pos:
                 #     print(angle)
                 # print("-----")
+                z = spark_pos[2] - ur_pos[2]
                 if arm == 'Thunder':
                     x = -spark_pos[1] + ur_pos[1]
                     y = -spark_pos[0] + ur_pos[0]
                 elif arm == 'Lightning':
                     x = +spark_pos[1] - ur_pos[1]
                     y = +spark_pos[0] - ur_pos[0]
-                z = spark_pos[2] - ur_pos[2]
+
+                    x = -x
+                    z = -z
+
                 x = x*width/2 + center[0]
                 y = y*height/2 + center[1]
                 z = z*300 + 300
+
+
+                tmp = z
+                z = y
+                y = tmp
+
+
                 fields[arm]['Spark_plot'].itemconfig(fields[arm]['point'], fill='red' if z > 0 else 'blue')
-                fields[arm]['Spark_plot'].moveto(fields[arm]['point'], x-10, y-10)
+                fields[arm]['Spark_plot'].moveto(fields[arm]['point'], y-10, x-10)
                 fields[arm]['Spark_meter'].moveto(fields[arm]['Spark_z_meter'], 0, z)
                 # fields[arm]['Spark_meter'].resize(fields[arm]['Spark_z_meter'], 0, z)
                 # enable_topic = arm.lower() + '_spark_enable'

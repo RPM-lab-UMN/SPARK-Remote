@@ -27,8 +27,9 @@ class GUI(Node):
         thunder_ip = "10.33.55.89"
         lightning_ip = "10.33.55.90"
 
-        arms = ["Thunder", "Lightning"]
-        ips = [thunder_ip, lightning_ip]
+        # arms = ["Thunder", "Lightning"]
+        arms = [ "Lightning", "Thunder"]
+        ips = [lightning_ip, thunder_ip]
         enable_control = {
             "Thunder": True,
             "Lightning": True,
@@ -57,26 +58,26 @@ class GUI(Node):
             pubs[arm.lower()+"_spark_command_gripper"] = self.create_publisher(Float32, f"/{arm.lower()}_spark_command_gripper", 10)
 
         colors = ["light blue", "light green"]
-        spark_homes = [(+0.000, -1.15192, -2.26893, 0.244346, +1.5708, +0.000), # Thunder Not used
-                (+0.000, -2.1293, 2.44346, -3.49066, -1.5708, +0.000)] # Lightning Not used
-        ur_homes = [(3.181920289993286,
+        ur_homes_dict = {"Thunder": (3.181920289993286,
                     -0.16607506573200226,
                     0.2841489911079407,
                     -1.0576382875442505,
                     -0.10265476256608963,
                     -0.7487161755561829), # Thunder - Correct
-                    (-3.100111484527588,
+                    "Lightning": (-3.100111484527588,
                      -3.1417200565338135,
                      0.07926303893327713,
                      -3.201451063156128,
                      0.11786472052335739,
-                     1.5061521530151367)] # Lighning - Correct
+                     1.5061521530151367) # Lighning - Correct
+        }
 
-        
-        
+        ur_homes = [ur_homes_dict["Lightning"], ur_homes_dict["Thunder"]]
+
+
         col = {}
         homes = {}
-        for name, color, ur_home, spark_home in zip(arms, colors, ur_homes, spark_homes):
+        for name, color, ur_home, spark_home in zip(arms, colors, ur_homes, ur_homes):
             col[name] = color
             homes[name] = [angle for angle in ur_home]
             homes[name+"_spark"] = spark_home # Not used

@@ -3,19 +3,12 @@ import math
 import numpy as np
 from check_pickle import load_trajectory
 from ur5.ur5 import RobotController
-
-FREQUENCY = 15.0  # Hz
+import Pyro5.api
+from matplotlib import pyplot as plt
+import cv2
 
 # Initialize the RobotController for Lightning
 lightning = RobotController('lightning', robot_ip='10.33.55.90', need_control=True, need_gripper=True)
-
-# Franka controller with interpolation
-import Pyro5.api
-import numpy as np
-from matplotlib import pyplot as plt
-import cv2
-import time
-
 
 CONTROL_FREQUENCY = 15
 
@@ -23,6 +16,7 @@ frame_buffer = []
 
 # reset to home position
 # TODO: set to your home position
+lightning.go_home()
 
 EXECUTION_NUM = 15  # number of actions to execute in one step
 
@@ -62,7 +56,8 @@ class ControllerInterface:
         robot_EEF_state = lightning.get_eff_pose()
         robot_joint_state = lightning.get_joint_angles()
         gripper_state = [lightning.get_current_position()]
-        robot_state = robot_joint_state + robot_EEF_state + gripper_state
+        # robot_state = robot_joint_state + robot_EEF_state + gripper_state
+        robot_state = robot_joint_state + gripper_state  # without EEF state
         
         self.step_count += 1
         

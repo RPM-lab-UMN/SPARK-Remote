@@ -6,7 +6,12 @@ from ur5.gripper import RobotiqGripper
 DEFAULT_LIGHTNING_IP = '192.168.0.101'
 DEFAULT_THUNDER_IP = '192.168.0.102'
 
-LIGHTNING_HOME = [np.pi, -np.pi*3/4, -np.pi/2, -np.pi/2, 0, np.pi/6]
+LIGHTNING_HOME = [-3.100111484527588,
+                     -3.1417200565338135,
+                     0.07926303893327713,
+                     -3.201451063156128,
+                     0.11786472052335739,
+                     1.5061521530151367]
 THUNDER_HOME   = [3.157623052597046, -0.5073397916606446, 0.9275072256671351, -2.031027456323141, 0.02100839652121067, 0.16949762403964996]
 
 SPEED = 0.5
@@ -81,6 +86,7 @@ class RobotController:
 
     def go_home(self):
         """Move robot to predefined home pose."""
+        print(f"Moving to {self.home}")
         self.controller.moveJ(self.home, SPEED, ACCELERATION, False)
 
     # ----------------------------

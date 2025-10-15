@@ -17,7 +17,7 @@ CONFIG = {
     "image_width": 320,
     "state_names": [
         "joint_pos_1", "joint_pos_2", "joint_pos_3", "joint_pos_4", "joint_pos_5", "joint_pos_6",
-        "eef_x", "eef_y", "eef_z", "eef_r", "eef_p", "eef_y",
+        # "eef_x", "eef_y", "eef_z", "eef_roll", "eef_pitch", "eef_yaw",
         "gripper_state"
     ],
     "action_names": [
@@ -63,6 +63,7 @@ def process_and_convert_to_lerobot_format(
     # Loop through each episode (.pkl file)
     for episode_idx, pkl_file in enumerate(pkl_files):
         print(f"Processing episode {episode_idx}: {pkl_file.name}...")
+        pkl_file = pkl_file.resolve()  # in case it's a symbolic link
         with open(pkl_file, "rb") as f:
             all_data = pickle.load(f)
 
@@ -108,9 +109,9 @@ def process_and_convert_to_lerobot_format(
 
             if frame_idx < len(episode_data) - 1:
                 step_t = episode_data[frame_idx]
-                eef_pose = np.concatenate(
-                    [step_t['eef_pose']['position'], step_t['eef_pose']['orientation_rpy']]
-                    ).astype(np.float32)
+                # eef_pose = np.concatenate(
+                #     [step_t['eef_pose']['position'], step_t['eef_pose']['orientation_rpy']]
+                #     ).astype(np.float32)
 
                 # TO DO: in the future, change to 'actions' as it is more friendly with openpi
                 action = np.concatenate([
@@ -119,7 +120,7 @@ def process_and_convert_to_lerobot_format(
                 ])
                 state_t = np.concatenate([
                     np.array(step_t['joint_positions'], dtype=np.float32),
-                    np.array(eef_pose, dtype=np.float32),
+                    # np.array(eef_pose, dtype=np.float32),
                     np.array([step_t['gripper_state']], dtype=np.float32)
                 ])
                 
@@ -268,9 +269,9 @@ def process_and_convert_to_lerobot_format(
 
 
 if __name__ == '__main__':
-    MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl"
-    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_blackbowl"
-    MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl"
+    MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl/all_quadrants"
+    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_blackbowl_all_quadrants"
+    MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl_all_quadrants"
 
     process_and_convert_to_lerobot_format(
         data_dir = MY_DATA_DIR, 

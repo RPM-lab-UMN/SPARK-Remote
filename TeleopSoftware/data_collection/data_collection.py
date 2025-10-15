@@ -25,7 +25,7 @@ import numpy as np
 
 
 # data collection settings
-save_dir = "/data/UR_teleop/pickblueblock_blackbowl"
+save_dir = "/data/UR_teleop/pickblueblock_blackbowl/bottomright"
 LANG_INSTRUCTION = "pick the blue block into the black bowl."
 os.makedirs(save_dir, exist_ok=True)
 step_hz = 15
@@ -172,6 +172,13 @@ def main():
                 recording = False
                 time.sleep(0.2)
                 print("[INFO] Number of trajectories collected:", len(os.listdir(save_dir)))
+                
+                # Random sampling of bowl and block positions
+                print("Random position of bowl: ") # grid positions
+                print(f"x: {np.random.randint(1, 40)/40}") # based on how many squares the camera sees
+                print(f"y: {np.random.randint(1, 17)/17}") # based on how many squares the camera sees
+                print("Random orientation of block: ") # degrees
+                print(f"degrees: {np.random.randint(0, 179)}")
 
             elif key == 'q':
                 print("[INFO] Quit program.")

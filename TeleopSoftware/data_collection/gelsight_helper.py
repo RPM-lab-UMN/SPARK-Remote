@@ -164,11 +164,11 @@ class GelSightMini:
         Select and open a camera device with the desired resolution.
 
         Args:
-            device_idx (int): The index of the device to select.
+            device_idx (int/str): The index of the device to select.
+            eg: /dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._GelSight_Mini_R0B_28F5-K4RR_28F5K4RR-video-index0
         """
 
-        #print("platform: ", platform.system())
-
+        device_id = device_idx
         if device_idx==None and platform.system() == "Windows":
                 (dev, desc) = Camera.find_cameras_windows("GelSight Mini")
                 print("Found: ", desc, ", dev: ", dev)
@@ -183,10 +183,12 @@ class GelSightMini:
             devices = Camera.list_devices()
             for ix in range(0,len(devices)):
                 print("Device: ", devices[ix])
+
             if isinstance(devices.get(device_idx), str):
                 device_id = devices[device_idx]
         else:
             device_id = device_idx
+
 
         if self.camera:
             self.camera.release()

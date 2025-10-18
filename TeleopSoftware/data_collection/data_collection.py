@@ -213,12 +213,14 @@ def collect_one_frame():
     ):
         return None
 
-    wrist_color_image = wrist_cam.get_color_frame()  # BGR
-    wrist_color_image = cv2.resize(wrist_color_image, (320, 240))
+    wrist_color_image, wrist_depth_frame = wrist_cam.get_frames()  # BGR
+    wrist_depth_image = cv2.convertScaleAbs(wrist_depth_frame, alpha=0.03) # depth to 8-bit image
+    # wrist_color_image = cv2.resize(wrist_color_image, (320, 240))
     wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
 
-    scene_color_image = scene_cam.get_color_frame()  # BGR
-    scene_color_image = cv2.resize(scene_color_image, (320, 240))
+    scene_color_image, scene_depth_frame = scene_cam.get_frames()  # BGR
+    scene_depth_image = cv2.convertScaleAbs(scene_depth_frame, alpha=0.03) # depth to 8-bit image
+    # scene_color_image = cv2.resize(scene_color_image, (320, 240))
     scene_color_image = cv2.cvtColor(scene_color_image, cv2.COLOR_BGR2RGB)
 
     timestamp = time.time()
@@ -226,6 +228,8 @@ def collect_one_frame():
         "timestamp": timestamp,
         "rgb_wrist": wrist_color_image,
         "rgb_scene": scene_color_image,
+        "depth_wrist": wrist_depth_image,
+        "depth_scene": scene_depth_image,
         "joint_positions": state_sub.joint_positions,
         "eef_pose": {
             "position": state_sub.eef_pose[:3],

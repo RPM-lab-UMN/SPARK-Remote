@@ -159,7 +159,7 @@ class GelSightMini:
         return Camera.list_devices()
 
 
-    def select_device(self, device_idx=None) -> None:
+    def select_device(self, device_idx=None, debug = False) -> None:
         """
         Select and open a camera device with the desired resolution.
 
@@ -181,8 +181,9 @@ class GelSightMini:
 
         if platform.system() == "Linux":
             devices = Camera.list_devices()
-            for ix in range(0,len(devices)):
-                print("Device: ", devices[ix])
+            if debug:
+                for ix in range(0,len(devices)):
+                    print("Device: ", devices[ix])
 
             if isinstance(devices.get(device_idx), str):
                 device_id = devices[device_idx]
@@ -203,7 +204,7 @@ class GelSightMini:
             current_width = self.camera.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
             current_height = self.camera.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
             print(
-                f"Camera opened successfully with resolution {current_width}x{current_height}!"
+                f"[INFO] Gelsight Camera opened successfully with resolution {current_width}x{current_height}!"
             )
         except Exception as e:
             print(f"Could not open selected device: {e}")

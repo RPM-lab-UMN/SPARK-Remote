@@ -130,8 +130,8 @@ def compute_eef_action(pos_list, rpy_list, gripper_list):
 
 rclpy.init()
 state_sub = StateSubscriber()
-wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL)
-scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL)
+wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL, width=640, height=480, fps=30)
+scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL, width=640, height=480, fps=30)
 print("Wrist camera initialized:", WRIST_CAMERA_SERIAL)
 print("Scene camera initialized:", SCENE_CAMERA_SERIAL)
 cams = [wrist_cam, scene_cam]

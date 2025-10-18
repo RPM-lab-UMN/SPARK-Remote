@@ -167,6 +167,7 @@ def main():
                 recording = True
                 frames = []
                 time.sleep(0.2)
+                step_end_time = time.time()
 
             elif key == 'e' and recording:
                 print("[INFO] Stop recording. Saving...")
@@ -189,17 +190,22 @@ def main():
                 print("[INFO] Quit program.")
                 break
 
-            now = time.time()
-            if recording and (now - last_step_time) >= step_dt:
+            if recording:
                 for i in range(3): # 3 times to ensure we get the latest state, still need to be improved.
                     rclpy.spin_once(state_sub, timeout_sec=0.01)
                 # print('time:', now-last_step_time)
                 # print(state_sub.eef_pose, state_sub.joint_positions, state_sub.gripper_value)
+
+                # make sure to record at the specified frequency--15hz
+                now = time.time()
+                if now - step_end_time < step_dt:
+                    time.sleep(step_dt - (now - step_end_time))
+                    # print('sleep:', step_dt - (now - step_end_time))
                 frame = collect_one_frame()
+                step_end_time = time.time()
                 # print('ft data:', state_sub.ft_data)
                 if frame is not None:
                     frames.append(frame)
-                last_step_time = now
 
     finally:
         restore_terminal_mode(old_terminal_settings)

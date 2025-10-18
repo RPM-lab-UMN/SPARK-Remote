@@ -61,12 +61,14 @@ class StateSubscriber(Node):
         self.eef_pose = None
         self.joint_positions = None
         self.gripper_value = None
+        self.ft_data = None
         self.spark_command_angles = None
         self.spark_command_gripper = None       
 
         self.create_subscription(Float32MultiArray, '/lightning_cartesian_eef', self.eef_callback, 10)
         self.create_subscription(Float32MultiArray, '/lightning_q', self.q_callback, 10)
         self.create_subscription(Int32, '/lightning_gripper', self.gripper_callback, 10)
+        self.create_subscription(Float32MultiArray, '/lightning_ft', self.ft_callback, 10)
         self.create_subscription(Float32MultiArray, '/lightning_spark_command_angles', self.spark_angles_callback, 10)
         self.create_subscription(Float32, '/lightning_spark_command_gripper', self.spark_gripper_callback, 10)        
 
@@ -78,6 +80,9 @@ class StateSubscriber(Node):
 
     def gripper_callback(self, msg):
         self.gripper_value = msg.data
+    
+    def ft_callback(self, msg):
+        self.ft_data = msg.data
 
     def spark_angles_callback(self, msg):
         self.spark_command_angles = msg.data
@@ -191,6 +196,7 @@ def main():
                 # print('time:', now-last_step_time)
                 # print(state_sub.eef_pose, state_sub.joint_positions, state_sub.gripper_value)
                 frame = collect_one_frame()
+                # print('ft data:', state_sub.ft_data)
                 if frame is not None:
                     frames.append(frame)
                 last_step_time = now
@@ -208,6 +214,7 @@ def collect_one_frame():
         state_sub.eef_pose is None or
         state_sub.joint_positions is None or
         state_sub.gripper_value is None or
+        state_sub.ft_data is None or
         state_sub.spark_command_angles is None or
         state_sub.spark_command_gripper is None
     ):
@@ -236,6 +243,7 @@ def collect_one_frame():
             "orientation_rpy": state_sub.eef_pose[3:]
         },
         "gripper_state": state_sub.gripper_value,
+        "ft_data": state_sub.ft_data,
         "lang_instruction": LANG_INSTRUCTION,
         "spark_command_angles": state_sub.spark_command_angles,
         "spark_command_gripper": state_sub.spark_command_gripper        

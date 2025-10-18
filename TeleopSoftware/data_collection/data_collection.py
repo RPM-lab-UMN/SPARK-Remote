@@ -16,6 +16,7 @@ import cv2
 
 from cv_bridge import CvBridge
 from camera import RealSenseCamera
+from gelsight_helper import GelSightMini
 import numpy as np
 
 
@@ -142,6 +143,17 @@ print("Scene camera initialized:", SCENE_CAMERA_SERIAL)
 cams = [wrist_cam, scene_cam]
 
 
+# Gelsight
+DEVICE_ID = 0
+img_w = 640
+img_h = 480
+brd_frac_crop = 0.15
+gelsight = GelSightMini(
+    device_idx=DEVICE_ID,
+    target_width=img_w,
+    target_height=img_h,
+    border_fraction=brd_frac_crop)
+
 # # Start MultiThreadedExecutor in a background thread
 # executor = MultiThreadedExecutor(num_threads=4)
 # executor.add_node(state_sub)
@@ -235,6 +247,7 @@ def collect_one_frame():
     scene_depth_image = cv2.convertScaleAbs(scene_depth_frame, alpha=0.03) # depth to 8-bit image
     # scene_color_image = cv2.resize(scene_color_image, (320, 240))
     scene_color_image = cv2.cvtColor(scene_color_image, cv2.COLOR_BGR2RGB)
+    gelsight_depth_image = gelsight.update()
 
     timestamp = time.time()
     frame = {
@@ -243,6 +256,7 @@ def collect_one_frame():
         "rgb_scene": scene_color_image,
         "depth_wrist": wrist_depth_image,
         "depth_scene": scene_depth_image,
+        "gelsight_scene": gelsight_depth_image,
         "joint_positions": state_sub.joint_positions,
         "eef_pose": {
             "position": state_sub.eef_pose[:3],

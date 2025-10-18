@@ -26,7 +26,7 @@ import numpy as np
 
 
 # data collection settings
-save_dir = "/data/UR_teleop/pickblueblock_blackbowl/bottomright"
+save_dir = "./"
 LANG_INSTRUCTION = "pick the blue block into the black bowl."
 os.makedirs(save_dir, exist_ok=True)
 step_hz = 15
@@ -144,7 +144,7 @@ cams = [wrist_cam, scene_cam]
 
 
 # Gelsight
-DEVICE_ID = 0
+DEVICE_ID = "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._GelSight_Mini_R0B_28F5-K4RR_28F5K4RR-video-index0"
 img_w = 640
 img_h = 480
 brd_frac_crop = 0.15
@@ -162,12 +162,9 @@ gelsight = GelSightMini(
 
 def main():
     recording = False
-    frames = []
-    traj_id = int(time.time())
 
     print("Press 's' to start recording, 'e' to end recording, 'q' to quit.")
 
-    last_step_time = time.time()
     old_terminal_settings = set_cbreak_mode()
 
     try:
@@ -185,8 +182,8 @@ def main():
                 print("[INFO] Stop recording. Saving...")
                 # frames processing: (1) gripper state normalization, (2) compute eef action
                 frames = preprocess_frame(frames)
-                save_trajectory(frames, traj_id)
                 traj_id = int(time.time())
+                save_trajectory(frames, traj_id)
                 recording = False
                 time.sleep(0.2)
                 print("[INFO] Number of trajectories collected:", len(os.listdir(save_dir)))

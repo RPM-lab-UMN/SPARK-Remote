@@ -26,9 +26,9 @@ import numpy as np
 
 
 # data collection settings
-save_dir = "./"
+SAVE_DIR = "./"
 LANG_INSTRUCTION = "pick the blue block into the black bowl."
-os.makedirs(save_dir, exist_ok=True)
+os.makedirs(SAVE_DIR, exist_ok=True)
 step_hz = 15
 step_dt = 1.0 / step_hz
 # Replace with your camera serial numbers
@@ -186,7 +186,7 @@ def main():
                 save_trajectory(frames, traj_id)
                 recording = False
                 time.sleep(0.2)
-                print("[INFO] Number of trajectories collected:", len(os.listdir(save_dir)))
+                print("[INFO] Number of trajectories collected:", len(os.listdir(SAVE_DIR)))
                 
                 # Random sampling of bowl and block positions
                 print("Random position of bowl: ") # grid positions
@@ -276,7 +276,7 @@ def save_trajectory(frames, traj_id):
         },
         "frames": frames
     }
-    save_path = os.path.join(save_dir, f"traj_{traj_id}.pkl")
+    save_path = os.path.join(SAVE_DIR, f"traj_{traj_id}.pkl")
     with open(save_path, 'wb') as f:
         pickle.dump(traj, f, protocol=pickle.HIGHEST_PROTOCOL)
     print(f"[INFO] Trajectory saved: {save_path}")

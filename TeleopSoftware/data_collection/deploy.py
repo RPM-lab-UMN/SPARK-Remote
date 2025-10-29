@@ -48,7 +48,7 @@ class ControllerInterface:
         overall_start_time = time.time()
         
         for i in range(EXECUTION_NUM):
-            print(f"Executing sub-step {i+1}/{EXECUTION_NUM} of control step {current_policy_step}")
+            # print(f"Executing sub-step {i+1}/{EXECUTION_NUM} of control step {current_policy_step}")
             sub_step_start_time = time.time() # Timestamp for this specific sub-step
 
             # 1. Get current state *before* commanding this sub-step action
@@ -72,11 +72,9 @@ class ControllerInterface:
             # 4. Send command to UR5
             # Don't command robot on the very first "step" call if it's just for getting initial state
             # (Assuming step 0 in pi0_deploy sends a dummy action chunk for init state)
-            if current_policy_step > 0 or i > 0: # Avoid command on first sub-step of first policy step
+            if current_policy_step > 0: # Avoid command on first policy step
                  lightning.servoJ(arm_action)
                  lightning.gripper_open(gripper_action_int)
-            else:
-                 print("Policy Step 0, Sub-step 0: Not sending command, only getting initial state.")
 
             # 5. Maintain control frequency
             elapsed_time = time.time() - sub_step_start_time

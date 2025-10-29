@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 
 # Define the serial number for your camera
-# CAMERA_SERIAL = '128422270284'  # D405
-CAMERA_SERIAL = 'f1380660'  # L515
+CAMERA_SERIAL = '128422270284'  # D405
+# CAMERA_SERIAL = 'f1380660'  # L515
 
 # Initialize the camera
 cam = RealSenseCamera(serial_number=CAMERA_SERIAL)
@@ -15,8 +15,9 @@ print("Press 'q' to quit.")
 try:
     # We use a 'while True' loop for continuous capture
     while True:
-        # 1. Get the latest color frame from the camera
-        frame = cam.get_color_frame()
+        # 1. Get the latest color frame (and ignore the depth frame with '_')
+        color_frame, _ = cam.get_frames()
+        frame = color_frame # Assign to the variable used for display
         
         # 2. Check if a frame was successfully captured (important for RealSense)
         if frame is not None:
@@ -24,8 +25,6 @@ try:
             cv2.imshow('RealSense Stream', frame)
             
             # 4. Check for a key press to exit the loop
-            # 'cv2.waitKey(1)' waits for 1 millisecond.
-            # '0xFF == ord('q')' checks if the key pressed was 'q'.
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:

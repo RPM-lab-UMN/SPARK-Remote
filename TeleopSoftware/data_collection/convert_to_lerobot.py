@@ -13,8 +13,8 @@ CONFIG = {
     "robot_type": "UR5e with Robotiq 2F-85 Gripper",
     "fps": 30,
     "chunk_size": 100, # Number of episodes per chunk; may need to adjust for large datasets
-    "image_height": 240,
-    "image_width": 320,
+    "image_height": 224, # DOUBLE CHECK THIS
+    "image_width": 224, # DOUBLE CHECK THIS
     "state_names": [
         "joint_pos_1", "joint_pos_2", "joint_pos_3", "joint_pos_4", "joint_pos_5", "joint_pos_6",
         # "eef_x", "eef_y", "eef_z", "eef_roll", "eef_pitch", "eef_yaw",
@@ -269,9 +269,9 @@ def process_and_convert_to_lerobot_format(
 
 
 if __name__ == '__main__':
-    MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl/all_quadrants"
-    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_blackbowl_all_quadrants"
-    MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl_all_quadrants"
+    MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl/active40_bottomleft_topright/certain_failures"
+    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_blackbowl_active40_bottomleft_topright_certainfailures"
+    MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl_active40_bottomleft_topright_certainfailures"
 
     process_and_convert_to_lerobot_format(
         data_dir = MY_DATA_DIR, 

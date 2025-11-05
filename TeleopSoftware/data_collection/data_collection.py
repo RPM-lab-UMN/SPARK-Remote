@@ -34,7 +34,9 @@ step_dt = 1.0 / step_hz
 # Replace with your camera serial numbers
 WRIST_CAMERA_SERIAL = '128422270284'  # D405
 SCENE_CAMERA_SERIAL = 'f1380660'  # L515
-
+resize = False # whether to resize images
+resize_width = 224
+resize_height = 224
 
 # ========== function：Non-blocking keyboard input ==========
 def get_key():
@@ -236,13 +238,13 @@ def collect_one_frame():
         return None
 
     wrist_color_image, wrist_depth_frame = wrist_cam.get_frames()  # BGR
-    wrist_depth_image = cv2.convertScaleAbs(wrist_depth_frame, alpha=0.03) # depth to 8-bit image
-    # wrist_color_image = cv2.resize(wrist_color_image, (320, 240))
-    wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
-
     scene_color_image, scene_depth_frame = scene_cam.get_frames()  # BGR
+    if resize:
+        wrist_color_image = cv2.resize(wrist_color_image, (resize_width, resize_height))
+        scene_color_image = cv2.resize(scene_color_image, (resize_width, resize_height))
+    wrist_depth_image = cv2.convertScaleAbs(wrist_depth_frame, alpha=0.03) # depth to 8-bit image
+    wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
     scene_depth_image = cv2.convertScaleAbs(scene_depth_frame, alpha=0.03) # depth to 8-bit image
-    # scene_color_image = cv2.resize(scene_color_image, (320, 240))
     scene_color_image = cv2.cvtColor(scene_color_image, cv2.COLOR_BGR2RGB)
     gelsight_depth_image = gelsight.update()
 

@@ -74,8 +74,12 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                     ros_data[arm.lower() + '_change_mode'] = False
                     
                 angles = [angle + homes[arm][i] for i, angle in enumerate(angles)]
+                
+                # Gripper mapping
+                # Note: This is not an ideal solution since there is encoding drift caused by the hardware.
                 if arm == "Lightning":
-                    gripper = map_value(angles[6], in_min=1.6, in_max=3.0, out_min=0, out_max=1)    
+                    # Note: If you don't want to move the Spark trigger through its full range of motion, make the in_min and in_max range smaller
+                    gripper = map_value(angles[6], in_min=-4.8, in_max=-2.3, out_min=0, out_max=1)                
                 else:
                     gripper = map_value(angles[6], in_min=-2.71, in_max=-1.26, out_min=0, out_max=1) #ToDo
                 gripper  = np.clip(gripper, 0, 1)

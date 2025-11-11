@@ -35,8 +35,8 @@ step_dt = 1.0 / step_hz
 WRIST_CAMERA_SERIAL = '128422270284'  # D405
 SCENE_CAMERA_SERIAL = 'f1380660'  # L515
 resize = False # whether to resize images
-resize_width = 224
-resize_height = 224
+resize_width = 320
+resize_height = 240
 
 # ========== function：Non-blocking keyboard input ==========
 def get_key():

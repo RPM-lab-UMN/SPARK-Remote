@@ -8,6 +8,10 @@
 1. Inside data_collection.py, change the "data collection settings" variables as needed
 2. Run data_collection.py
 3. Press 's' to record, 'e' to stop, etc.
+4. (Optional) After done collecting demos, send to the server for training, converting, etc.
+```
+rsync -avP /path/to/local/demos/ user@server:/path/to/server/directory
+```
 
 ## Troubleshooting data collection
 - [./test_camera.py ](./test_camera.py) > Script for testing your cameras
@@ -20,7 +24,7 @@ RuntimeError: Frame didn't arrive within 5000
 ```
 
 ## Convert to LeRobot: 
-Change necessary fields in [./convert_to_lerobot.py ](./convert_to_lerobot.py) and run.  
+Change necessary fields in [./convert_to_lerobot.py ](./convert_to_lerobot.py) (e.g. image_height, image_width) and run.  
 **Note:** Make sure datasets==3.6.0!
 
 ## Deployment

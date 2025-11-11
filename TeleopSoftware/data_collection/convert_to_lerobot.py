@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import datasets
 import imageio.v2 as imageio
+import cv2
 
 # --- User-configurable parameters ---
 # Adjust these to match your specific data.
@@ -13,7 +14,7 @@ CONFIG = {
     "robot_type": "UR5e with Robotiq 2F-85 Gripper",
     "fps": 30,
     "chunk_size": 100, # Number of episodes per chunk; may need to adjust for large datasets
-    "image_height": 224, # DOUBLE CHECK THIS
+    "image_height": 304, # DOUBLE CHECK THIS
     "image_width": 224, # DOUBLE CHECK THIS
     "state_names": [
         "joint_pos_1", "joint_pos_2", "joint_pos_3", "joint_pos_4", "joint_pos_5", "joint_pos_6",
@@ -27,7 +28,7 @@ CONFIG = {
 }
 
 # Define a custom feature for the VideoFrame dictionary
-VideoFrame = datasets.Features({"path": datasets.Value("string"), "timestamp": datasets.Value("float32")})
+# VideoFrame = datasets.Features({"path": datasets.Value("string"), "timestamp": datasets.Value("float32")})
 
 def process_and_convert_to_lerobot_format(
     data_dir: str,
@@ -104,6 +105,13 @@ def process_and_convert_to_lerobot_format(
             # Make sure images are uint8
             wrist_frame = step['rgb_wrist'].astype(np.uint8)
             scene_frame = step['rgb_scene'].astype(np.uint8)
+            # Resize to CONFIG dimensions
+            target_shape = (CONFIG["image_height"], CONFIG["image_width"])
+            if (wrist_frame.shape[0], wrist_frame.shape[1]) != target_shape:
+                wrist_frame = cv2.resize(wrist_frame, (CONFIG["image_width"], CONFIG["image_height"]))
+            if (scene_frame.shape[0], scene_frame.shape[1]) != target_shape:
+                scene_frame = cv2.resize(scene_frame, (CONFIG["image_width"], CONFIG["image_height"]))
+
             wrist_frames.append(wrist_frame)
             scene_frames.append(scene_frame)
 
@@ -132,8 +140,9 @@ def process_and_convert_to_lerobot_format(
                     'episode_index': episode_idx,
                     'frame_index': frame_idx,
                     'timestamp': step_t['timestamp'],
-                    'observation.image_wrist': step['rgb_wrist'],
-                    'observation.image_scene': step['rgb_scene'],
+                    # LeRobot gets these images from video files
+                    # 'observation.image_wrist': wrist_frame,
+                    # 'observation.image_scene': scene_frame,
                     'observation.state': state_t,
                     'action': action,
                     'next.done': frame_idx == len(episode_data) - 2,
@@ -141,7 +150,7 @@ def process_and_convert_to_lerobot_format(
                     'task_index': task_id,
                 })
                 global_idx += 1
-        
+
         # --- Save this episode's data to a Parquet file ---
         if episode_steps: # Ensure the episode has steps
             # Create the specific chunk directory for the data
@@ -225,7 +234,7 @@ def process_and_convert_to_lerobot_format(
         "robot_type": CONFIG["robot_type"],
         "fps": CONFIG["fps"],
         "total_episodes": total_episodes,
-        "total_frames": global_idx, # Total transitions, not raw frames
+        "total_frames": global_idx, # Total transitions (# frames - 1 per episode)
         "total_tasks": len(tasks_metadata),
         "total_videos": total_episodes * 2,
         "total_chunks": (total_episodes + CONFIG["chunk_size"] - 1) // CONFIG["chunk_size"],

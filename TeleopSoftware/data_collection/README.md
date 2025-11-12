@@ -13,14 +13,16 @@
 rsync -avP /path/to/local/demos/ user@server:/path/to/server/directory
 ```
 
-## Troubleshooting data collection
+## Troubleshooting data collection/deployment
 - [./test_camera.py ](./test_camera.py) > Script for testing your cameras
-- If you run into the error below during data collection, it might be because the sudden motion when you start SPARK jostled the camera cable out of its socket. You can confirm this with [./test_camera.py ](./test_camera.py).
+- If you run into the errors below during data collection/deployment, it might be because the sudden motion when you start SPARK jostled the camera cable out of its socket. You can confirm this with [./test_camera.py ](./test_camera.py).
 ```
 File "/home/andrewliao/SPARK-Remote/TeleopSoftware/data_collection/camera.py", line 17, in get_color_frame
     frames = self.pipeline.wait_for_frames()
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RuntimeError: Frame didn't arrive within 5000
+
+# or something like "Device/resource busy"
 ```
 
 ## Convert to LeRobot: 

@@ -18,6 +18,7 @@ from cv_bridge import CvBridge
 from camera import RealSenseCamera
 from gelsight_helper import GelSightMini
 import numpy as np
+import pandas as pd
 
 
 # ==============================================================
@@ -27,16 +28,18 @@ import numpy as np
 
 # data collection settings
 SAVE_DIR = "./"
+USE_FACTORS = True # for Andrew's project; set to False otherwise
+CSV_FILENAME = "eval_factors.csv" # save directory for factor values used in demo (Andrew's project)
 LANG_INSTRUCTION = "pick the blue block into the black bowl."
 os.makedirs(SAVE_DIR, exist_ok=True)
-step_hz = 15
-step_dt = 1.0 / step_hz
+STEP_HZ = 15
+STEP_DT = 1.0 / STEP_HZ
 # Replace with your camera serial numbers
 WRIST_CAMERA_SERIAL = '128422270284'  # D405
 SCENE_CAMERA_SERIAL = 'f1380660'  # L515
-resize = False # whether to resize images
-resize_width = 320
-resize_height = 240
+RESIZE = False # whether to resize images
+RESIZE_WIDTH = 320
+RESIZE_HEIGHT = 240
 
 # ========== function：Non-blocking keyboard input ==========
 def get_key():
@@ -132,6 +135,38 @@ def compute_eef_action(pos_list, rpy_list, gripper_list):
 
     return np.hstack([d_pos, d_rpy, d_gripper])  # shape (N-1, 7)
 
+# ====== extra helper functions (Andrew's project; ignore otherwise) =======
+def gen_factors():
+    """Generates random factors for scene setup."""
+    factors = {
+        "bowl_x": np.random.rand(),
+        "bowl_y": np.random.rand(),
+        "table_height": np.random.randint(1, 4), # currently three table heights: 1, 2, and 3 inches above UR5 base rack
+        "block_angle_deg": np.random.randint(0, 179)
+    }
+    print("====== SCENE FACTOR VALUES ======")
+    print(f" Bowl Position (Grid): x={factors['bowl_x']:.3f}, y={factors['bowl_y']:.3f}")
+    print(f" Table Height: {factors['table_height']}")
+    print(f" Block Orientation: {factors['block_angle_deg']} degrees")
+
+    return factors
+
+def save_factors(traj_id, factors):
+    """Appends the trajectory ID and its associated factors to a CSV file."""
+    csv_path = os.path.join(SAVE_DIR, CSV_FILENAME)
+    try:
+        data = factors.copy()
+        data['traj_id'] = traj_id
+        df = pd.DataFrame([data])
+        # Check if file exists to determine if we need to write the header
+        if os.path.exists(csv_path):
+            df.to_csv(csv_path, mode='a', header=False, index=False)
+        else:
+            df.to_csv(csv_path, mode='w', header=True, index=False)
+        print(f"[INFO] Factors logged to {csv_path}")
+
+    except Exception as e:
+        print(f"[ERROR] Failed to log to CSV: {e}")
 
 
 # ========== main function ==========
@@ -168,6 +203,8 @@ def main():
     print("Press 's' to start recording, 'e' to end recording, 'q' to quit.")
 
     old_terminal_settings = set_cbreak_mode()
+    if USE_FACTORS:
+        current_factors = gen_factors()
 
     try:
         while True:
@@ -187,15 +224,11 @@ def main():
                 traj_id = int(time.time())
                 save_trajectory(frames, traj_id)
                 recording = False
+                if USE_FACTORS:
+                    save_factors(traj_id, current_factors) # Andrew's project; ignore otherwise
+                    current_factors = gen_factors()
                 time.sleep(0.2)
                 print("[INFO] Number of trajectories collected:", len(os.listdir(SAVE_DIR)))
-                
-                # Random sampling of bowl and block positions
-                print("Random position of bowl: ") # grid positions
-                print(f"x: {np.random.randint(1, 40)/40}") # based on how many squares the camera sees
-                print(f"y: {np.random.randint(1, 17)/17}") # based on how many squares the camera sees
-                print("Random orientation of block: ") # degrees
-                print(f"degrees: {np.random.randint(0, 179)}")
 
             elif key == 'q':
                 print("[INFO] Quit program.")
@@ -209,9 +242,9 @@ def main():
 
                 # make sure to record at the specified frequency--15hz
                 now = time.time()
-                if now - step_end_time < step_dt:
-                    time.sleep(step_dt - (now - step_end_time))
-                    # print('sleep:', step_dt - (now - step_end_time))
+                if now - step_end_time < STEP_DT:
+                    time.sleep(STEP_DT - (now - step_end_time))
+                    # print('sleep:', STEP_DT - (now - step_end_time))
                 frame = collect_one_frame()
                 step_end_time = time.time()
                 # print('ft data:', state_sub.ft_data)
@@ -239,9 +272,9 @@ def collect_one_frame():
 
     wrist_color_image, wrist_depth_frame = wrist_cam.get_frames()  # BGR
     scene_color_image, scene_depth_frame = scene_cam.get_frames()  # BGR
-    if resize:
-        wrist_color_image = cv2.resize(wrist_color_image, (resize_width, resize_height))
-        scene_color_image = cv2.resize(scene_color_image, (resize_width, resize_height))
+    if RESIZE:
+        wrist_color_image = cv2.resize(wrist_color_image, (RESIZE_WIDTH, RESIZE_HEIGHT))
+        scene_color_image = cv2.resize(scene_color_image, (RESIZE_WIDTH, RESIZE_HEIGHT))
     wrist_depth_image = cv2.convertScaleAbs(wrist_depth_frame, alpha=0.03) # depth to 8-bit image
     wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
     scene_depth_image = cv2.convertScaleAbs(scene_depth_frame, alpha=0.03) # depth to 8-bit image

@@ -15,6 +15,11 @@ vr_start_pose = {}
 homes = {}
 
 # Offsets between Spark
+# If these are wrong, it will be obvious in the GUI 
+# (when you match the Spark arm configuration to the UR5's, the dot should be close to the center of the circle)
+# To recalibrate, first run launch_devs.py and launch.py, 
+# set the UR5 and Spark arm to the same configuration, 
+# and do: UR5 angles (e.g. ros2 topic echo /lightning_q) minus Spark angles (e.g. ros2 topic echo /Spark_angle/lightning; ignore the gripper value)
 
 THUNDER_OFFSET = [ 0.8322513103485107,
   1.3889789581298828,
@@ -24,16 +29,13 @@ THUNDER_OFFSET = [ 0.8322513103485107,
  -2.2259570360183716,
   0] # New
 
-
-
-LIGHTNING_OFFSET =  [-1.0215797424316406,
- -4.490872740745544,
- -1.4827108010649681,
- -0.588315486907959,
- -0.5356001891195774,
-  2.0629922747612,
-  0
-  ] # New
+LIGHTNING_OFFSET =  [-1.06043816,
+ -4.28556144,
+ -1.23235792,
+ -1.21208322,
+ -0.60609466,
+ 1.96014991,
+ 0] # New
 
 
 spark_enable = {}
@@ -42,7 +44,7 @@ offset = [0,0,0,0]
 
 publish_ft = True
 
-def map_value(x, in_min=1.9, in_max=3.0, out_min=0, out_max=255):
+def map_value(x, in_min=-0.4, in_max=0.4, out_min=0, out_max=255):
     return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min)
 
 def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
@@ -79,7 +81,7 @@ def ros_update(fields, ros_data, control_modes, URs, pubs, optimize):
                 # Note: This is not an ideal solution since there is encoding drift caused by the hardware.
                 if arm == "Lightning":
                     # Note: If you don't want to move the Spark trigger through its full range of motion, make the in_min and in_max range smaller
-                    gripper = map_value(angles[6], in_min=-4.8, in_max=-2.3, out_min=0, out_max=1)                
+                    gripper = map_value(angles[6], in_min=-0.4, in_max=0.25, out_min=0, out_max=1)                
                 else:
                     gripper = map_value(angles[6], in_min=-2.71, in_max=-1.26, out_min=0, out_max=1) #ToDo
                 gripper  = np.clip(gripper, 0, 1)

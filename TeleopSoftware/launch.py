@@ -31,11 +31,11 @@ class GUI(Node):
         arms = [ "Lightning", "Thunder"]
         ips = [lightning_ip, thunder_ip]
         enable_control = {
-            "Thunder": True,
+            # "Thunder": True,
             "Lightning": True,
         }
         enable_gripper = {
-            "Thunder": True,
+            # "Thunder": True,
             "Lightning": True
         }
         URs = UR(arms, ips, enable_gripper)

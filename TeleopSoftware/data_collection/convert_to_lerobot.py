@@ -145,7 +145,7 @@ def process_and_convert_to_lerobot_format(
                     # 'observation.image_scene': scene_frame,
                     'observation.state': state_t,
                     'action': action,
-                    'next.done': frame_idx == len(episode_data) - 2,
+                    # 'next.done': frame_idx == len(episode_data) - 2,
                     'task': task,
                     'task_index': task_id,
                 })
@@ -216,7 +216,7 @@ def process_and_convert_to_lerobot_format(
             "dtype": "float32", "shape": [action_shape],
             "names": CONFIG["action_names"]
         },
-        "next.done": {"dtype": "bool", "shape": [1]},
+        # "next.done": {"dtype": "bool", "shape": [1]},
         "observation.image_wrist": {
             "dtype": "video", "shape": [CONFIG["image_height"], CONFIG["image_width"], 3],
             "names": ["height", "width", "channel"],
@@ -268,12 +268,13 @@ def process_and_convert_to_lerobot_format(
         print(f"\nPushing dataset to the Hub at '{hf_repo_id}'...")
         
         api = HfApi()
-        # api.create_tag(hf_repo_id, tag=info["codebase_version"], repo_type="dataset")
+        api.create_repo(repo_id=hf_repo_id, repo_type="dataset", exist_ok=True)
         api.upload_folder(
             folder_path=str(output_path),
             repo_id=hf_repo_id,
             repo_type="dataset",
         )
+        api.create_tag(hf_repo_id, tag=info["codebase_version"], repo_type="dataset")
         print("\n✅ Dataset pushed to the Hub successfully.")
 
 

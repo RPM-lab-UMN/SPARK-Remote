@@ -20,6 +20,8 @@ from gelsight_helper import GelSightMini
 import numpy as np
 import pandas as pd
 
+from factors_utils import gen_factors
+
 
 # ==============================================================
 # TODO:
@@ -27,15 +29,17 @@ import pandas as pd
 
 
 # data collection settings
-SAVE_DIR = "./"
+SAVE_DIR = "/data/UR_teleop/uprightcup/rightview/tableheight3/topright"
 USE_FACTORS = True # for Andrew's project; set to False otherwise
+# MAKE SURE TO CHANGE VALUES IN gen_factors()
 CSV_FILENAME = "eval_factors.csv" # save directory for factor values used in demo (Andrew's project)
-LANG_INSTRUCTION = "pick the blue block into the black bowl."
+LANG_INSTRUCTION = "Set the cup upright"
 os.makedirs(SAVE_DIR, exist_ok=True)
 STEP_HZ = 15
 STEP_DT = 1.0 / STEP_HZ
 # Replace with your camera serial numbers
-WRIST_CAMERA_SERIAL = '128422270284'  # D405
+# WRIST_CAMERA_SERIAL = '128422270284'  # D405
+WRIST_CAMERA_SERIAL = '130322273305'  # D405
 SCENE_CAMERA_SERIAL = 'f1380660'  # L515
 RESIZE = False # whether to resize images
 RESIZE_WIDTH = 320
@@ -136,21 +140,6 @@ def compute_eef_action(pos_list, rpy_list, gripper_list):
     return np.hstack([d_pos, d_rpy, d_gripper])  # shape (N-1, 7)
 
 # ====== extra helper functions (Andrew's project; ignore otherwise) =======
-def gen_factors():
-    """Generates random factors for scene setup."""
-    factors = {
-        "bowl_x": np.random.rand(),
-        "bowl_y": np.random.rand(),
-        "table_height": np.random.randint(1, 4), # currently three table heights: 1, 2, and 3 inches above UR5 base rack
-        "block_angle_deg": np.random.randint(0, 179)
-    }
-    print("====== SCENE FACTOR VALUES ======")
-    print(f" Bowl Position (Grid): x={factors['bowl_x']:.3f}, y={factors['bowl_y']:.3f}")
-    print(f" Table Height: {factors['table_height']}")
-    print(f" Block Orientation: {factors['block_angle_deg']} degrees")
-
-    return factors
-
 def save_factors(traj_id, factors):
     """Appends the trajectory ID and its associated factors to a CSV file."""
     csv_path = os.path.join(SAVE_DIR, CSV_FILENAME)
@@ -175,9 +164,8 @@ rclpy.init()
 state_sub = StateSubscriber()
 wrist_cam = RealSenseCamera(serial_number=WRIST_CAMERA_SERIAL, width=640, height=480, fps=30)
 scene_cam = RealSenseCamera(serial_number=SCENE_CAMERA_SERIAL, width=640, height=480, fps=30)
-print("Wrist camera initialized:", WRIST_CAMERA_SERIAL)
-print("Scene camera initialized:", SCENE_CAMERA_SERIAL)
 cams = [wrist_cam, scene_cam]
+# cams = [wrist_cam]
 
 
 # Gelsight
@@ -203,6 +191,7 @@ def main():
     print("Press 's' to start recording, 'e' to end recording, 'q' to quit.")
 
     old_terminal_settings = set_cbreak_mode()
+    print("[INFO] Number of trajectories collected:", len([f for f in os.listdir(SAVE_DIR) if f.endswith('.pkl')]))
     if USE_FACTORS:
         current_factors = gen_factors()
 
@@ -224,11 +213,11 @@ def main():
                 traj_id = int(time.time())
                 save_trajectory(frames, traj_id)
                 recording = False
+                print("[INFO] Number of trajectories collected:", len([f for f in os.listdir(SAVE_DIR) if f.endswith('.pkl')]))
                 if USE_FACTORS:
                     save_factors(traj_id, current_factors) # Andrew's project; ignore otherwise
                     current_factors = gen_factors()
                 time.sleep(0.2)
-                print("[INFO] Number of trajectories collected:", len(os.listdir(SAVE_DIR)))
 
             elif key == 'q':
                 print("[INFO] Quit program.")
@@ -279,7 +268,7 @@ def collect_one_frame():
     wrist_color_image = cv2.cvtColor(wrist_color_image, cv2.COLOR_BGR2RGB)
     scene_depth_image = cv2.convertScaleAbs(scene_depth_frame, alpha=0.03) # depth to 8-bit image
     scene_color_image = cv2.cvtColor(scene_color_image, cv2.COLOR_BGR2RGB)
-    gelsight_depth_image = gelsight.update()
+    # gelsight_depth_image = gelsight.update()
 
     timestamp = time.time()
     frame = {
@@ -288,7 +277,7 @@ def collect_one_frame():
         "rgb_scene": scene_color_image,
         "depth_wrist": wrist_depth_image,
         "depth_scene": scene_depth_image,
-        "gelsight_scene": gelsight_depth_image,
+        # "gelsight_scene": gelsight_depth_image,
         "joint_positions": state_sub.joint_positions,
         "eef_pose": {
             "position": state_sub.eef_pose[:3],

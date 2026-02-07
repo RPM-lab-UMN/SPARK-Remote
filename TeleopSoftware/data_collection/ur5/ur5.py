@@ -3,21 +3,49 @@ import rtde_control
 import rtde_receive
 from ur5.gripper import RobotiqGripper
 
-DEFAULT_LIGHTNING_IP = '192.168.0.101'
+# DEFAULT_LIGHTNING_IP = '192.168.0.101'
+DEFAULT_LIGHTNING_IP = '10.33.55.90'
 DEFAULT_THUNDER_IP = '192.168.0.102'
 
+# old
 # LIGHTNING_HOME = [-3.092430591583252,
 #                   -2.535433530807495,
 #                   -1.2771631479263306,
 #                   -1.0458279848098755,
 #                   -0.0320628322660923,
 #                   -0.025522056967020035]
-LIGHTNING_HOME = [-3.100111484527588,
-                     -3.1417200565338135,
-                     0.07926303893327713,
-                     -3.201451063156128,
-                     0.11786472052335739,
-                     1.5061521530151367]
+
+# new
+# LIGHTNING_HOME = [-3.100111484527588,
+#                      -3.1417200565338135,
+#                      0.07926303893327713,
+#                      -3.201451063156128,
+#                      0.11786472052335739,
+#                      1.5061521530151367]
+
+# pickblueblock task
+LIGHTNING_HOME = [-3.24949467,
+                  -3.0424998,
+                  -0.86572586,
+                  -1.74009193,
+                  -0.10959837,
+                   0.79446799]
+
+# putgreeninpot task
+# LIGHTNING_HOME = [-3.21361433,
+#                   -2.99445038,
+#                   -1.03830039,
+#                   -1.76119252,
+#                   -0.09230186,
+#                    0.91807206]
+
+# uprightcup task
+# LIGHTNING_HOME = [-3.15506537,
+#                   -2.98186746,
+#                   -1.04710938,
+#                   -1.30881827,
+#                    0.01525672,
+#                    0.3855738]
 
 THUNDER_HOME   = [3.157623052597046, -0.5073397916606446, 0.9275072256671351, -2.031027456323141, 0.02100839652121067, 0.16949762403964996]
 
@@ -28,7 +56,7 @@ LOOKAHEAD_TIME = 0.2
 GAIN = 500
 
 class RobotController:
-    def __init__(self, arm: str, robot_ip: str, need_control: bool = False, need_gripper: bool = False):
+    def __init__(self, arm: str, robot_ip: str = None, need_control: bool = False, need_gripper: bool = False):
         self._ip = robot_ip if (arm in ["thunder", "lightning"]) and (robot_ip is not None) else DEFAULT_LIGHTNING_IP
         self.home = THUNDER_HOME if arm == 'thunder' else LIGHTNING_HOME
         self.gripper = self._init_gripper() if need_gripper else None
@@ -119,7 +147,7 @@ class RobotController:
         return self.gripper._get_var(self.gripper.POS)
 
 if __name__ == "__main__":
-    robot = RobotController('thunder', need_control=True, need_gripper=False)
+    robot = RobotController('lightning', need_control=True, need_gripper=False)
     print("Current pose:", robot.get_eff_pose())
     print("Current joints:", robot.get_joint_angles())
     robot.go_home()

@@ -3,8 +3,9 @@ import cv2
 import numpy as np
 
 # Define the serial number for your camera
-CAMERA_SERIAL = '128422270284'  # D405
-# CAMERA_SERIAL = 'f1380660'  # L515
+# CAMERA_SERIAL = '128422270284'  # D405 (old)
+# CAMERA_SERIAL = '130322273305'  # D405 (wrist)
+CAMERA_SERIAL = 'f1380660'  # L515 (scene)
 
 # Initialize the camera
 cam = RealSenseCamera(serial_number=CAMERA_SERIAL)

@@ -274,7 +274,7 @@ def process_and_convert_to_lerobot_format(
             repo_id=hf_repo_id,
             repo_type="dataset",
         )
-        api.create_tag(hf_repo_id, tag=info["codebase_version"], repo_type="dataset")
+        api.create_tag(hf_repo_id, tag=info["codebase_version"], repo_type="dataset", exist_ok=True)
         print("\n✅ Dataset pushed to the Hub successfully.")
 
 

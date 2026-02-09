@@ -68,6 +68,7 @@ def gen_factors():
             # print(f" Table Height: {factors['table_height']}")
             return factors
 
+
 # def gen_factors():
     """
     FOR THE TASK: 'put the green block in the pot'
@@ -80,22 +81,22 @@ def gen_factors():
     pot_y = 0.5
     while True:
         # Generate factors
-        block_x = np.random.choice(np.linspace(0.5, 1.0, num=6)) # change for diff quadrant
-        block_y = np.random.choice(np.linspace(0.5, 1.0, num=6)) # change for diff quadrant
+        block_x = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
+        block_y = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
 
         lid_on = np.random.choice([True, False])
         if lid_on:
             # If the lid is on the pot, we assume a fixed pot position (0.5, 0.5)
             lid_x, lid_y = pot_x, pot_y
         else:
-            lid_x = np.random.choice(np.linspace(0.0, 0.5, num=6))
-            lid_y = np.random.choice(np.linspace(0.0, 0.5, num=6))
+            lid_x = np.random.choice(np.linspace(0.0, 1.0, num=6))
+            lid_y = np.random.choice(np.linspace(0.0, 1.0, num=6))
         
         # Select table height (you can randomize this among choices or keep it fixed)
         # table_height = np.random.choice([1, 2, 3, 4]) 
-        table_height = 3
+        table_height = 1
 
-        camera_viewpoint = "back"
+        camera_viewpoint = "right"
 
         # Calculate Euclidean distances
         distance_block_lid = np.sqrt((block_x - lid_x)**2 + (block_y - lid_y)**2)

@@ -43,3 +43,4 @@ In the TeleopSoftware/data_collection folder:
   
 In pi0_deploy.ipynb in openpi/examples/:
 1. Run the steps to setup, load model, initialize cameras, and run actual deployment.
+Make sure to change variables as needed including "config", "checkpoint_dir", "prompt", "SAVE_DIR", etc.

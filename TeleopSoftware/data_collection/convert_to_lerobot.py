@@ -273,15 +273,16 @@ def process_and_convert_to_lerobot_format(
             folder_path=str(output_path),
             repo_id=hf_repo_id,
             repo_type="dataset",
+            delete_patterns="*"
         )
         api.create_tag(hf_repo_id, tag=info["codebase_version"], repo_type="dataset", exist_ok=True)
         print("\n✅ Dataset pushed to the Hub successfully.")
 
 
 if __name__ == '__main__':
-    MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock_blackbowl/active40_bottomleft_topright/certain_failures"
-    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_blackbowl_active40_bottomleft_topright_certainfailures"
-    MY_HF_REPO_ID = "iamandrewliao/pickblueblock_blackbowl_active40_bottomleft_topright_certainfailures"
+    MY_DATA_DIR = "/data/shared_data/real_world_data/pickblueblock/all_bottomleft_topright"
+    OUTPUT_DIR = "/home/liao0241/.cache/huggingface/lerobot/iamandrewliao/pickblueblock_bottomleft_topright"
+    MY_HF_REPO_ID = "iamandrewliao/pickblueblock_bottomleft_topright"
 
     process_and_convert_to_lerobot_format(
         data_dir = MY_DATA_DIR, 

@@ -84,13 +84,13 @@ def gen_factors():
         block_x = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
         block_y = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
 
-        lid_on = np.random.choice([True, False])
-        if lid_on:
-            # If the lid is on the pot, we assume a fixed pot position (0.5, 0.5)
-            lid_x, lid_y = pot_x, pot_y
-        else:
-            lid_x = np.random.choice(np.linspace(0.0, 1.0, num=6))
-            lid_y = np.random.choice(np.linspace(0.0, 1.0, num=6))
+        # lid_on = np.random.choice([True, False])
+        # if lid_on:
+        #     # If the lid is on the pot, we assume a fixed pot position (0.5, 0.5)
+        #     lid_x, lid_y = pot_x, pot_y
+        # else:
+        #     lid_x = np.random.choice(np.linspace(0.0, 1.0, num=6))
+        #     lid_y = np.random.choice(np.linspace(0.0, 1.0, num=6))
         
         # Select table height (you can randomize this among choices or keep it fixed)
         # table_height = np.random.choice([1, 2, 3, 4]) 
@@ -99,41 +99,43 @@ def gen_factors():
         camera_viewpoint = "right"
 
         # Calculate Euclidean distances
-        distance_block_lid = np.sqrt((block_x - lid_x)**2 + (block_y - lid_y)**2)
+        # distance_block_lid = np.sqrt((block_x - lid_x)**2 + (block_y - lid_y)**2)
         distance_block_pot = np.sqrt((block_x - pot_x)**2 + (block_y - pot_y)**2)
 
         # Check reachability
-        reach_ok = is_valid_point((block_x, block_y), 3) and is_valid_point((lid_x, lid_y), 3)
+        reach_ok = is_valid_point((block_x, block_y), 3)
+        # reach_ok = is_valid_point((block_x, block_y), 3) and is_valid_point((lid_x, lid_y), 3)
 
         # Block should always be away from Lid and Pot
-        overlap_ok_block_lid = distance_block_lid > MIN_DIST_BLOCK_LIDPOT
+        # overlap_ok_block_lid = distance_block_lid > MIN_DIST_BLOCK_LIDPOT
         overlap_ok_block_pot = distance_block_pot > MIN_DIST_BLOCK_LIDPOT # reusing block/pot threshold
 
         # Only check Lid-to-Pot distance if the lid is NOT on
-        if not lid_on:
-            distance_lid_pot = np.sqrt((lid_x - pot_x)**2 + (lid_y - pot_y)**2)
-            overlap_ok_lid_pot = distance_lid_pot > MIN_DIST_LID_POT
-        else:
-            # If lid is on, we don't care about the lid-pot distance check
-            overlap_ok_lid_pot = True 
+        # if not lid_on:
+        #     distance_lid_pot = np.sqrt((lid_x - pot_x)**2 + (lid_y - pot_y)**2)
+        #     overlap_ok_lid_pot = distance_lid_pot > MIN_DIST_LID_POT
+        # else:
+        #     # If lid is on, we don't care about the lid-pot distance check
+        #     overlap_ok_lid_pot = True 
 
-        if reach_ok and overlap_ok_block_lid and overlap_ok_block_pot and overlap_ok_lid_pot:
+        if reach_ok and overlap_ok_block_pot:
+        # if reach_ok and overlap_ok_block_lid and overlap_ok_block_pot and overlap_ok_lid_pot:
             # If valid, construct dictionary and break the loop
             factors = {
                 "block_x": block_x, 
                 "block_y": block_y,
-                "lid_x": lid_x,
-                "lid_y": lid_y,
-                "lid_on": lid_on,
+                # "lid_x": lid_x,
+                # "lid_y": lid_y,
+                # "lid_on": lid_on,
                 'table_height': table_height,
                 "camera_viewpoint": camera_viewpoint,
             }
             
             print("====== FACTOR VALUES FOR THE NEXT DEMO ======")
             print(f" Block Position (Grid): x={factors['block_x']:.3f}, y={factors['block_y']:.3f}")
-            if not lid_on:
-                print(f" Lid Position (Grid): x={factors['lid_x']:.3f}, y={factors['lid_y']:.3f}")
-            else:
-                print("Lid is on")
+            # if not lid_on:
+            #     print(f" Lid Position (Grid): x={factors['lid_x']:.3f}, y={factors['lid_y']:.3f}")
+            # else:
+            #     print("Lid is on")
             # print(f" Table Height: {factors['table_height']}")
             return factors

@@ -4,12 +4,18 @@ import numpy as np
 # (how far the robot arm can reach)
 # Format: height: {'m': slope, 'c': y value at y-intercept (x=0), 'x_thresh': x value at x-intercept (y=0)}
 # Invalid condition: (y <= mx + c) and (x >= x_thresh)
+# CORRECT
 REACHABILITY_BOUNDARIES = {
-    1: {'m': 0.857, 'c': -0.257, 'x_thresh': 0.0}, # y = 0.857x - 0.257
-    2: {'m': 0.867, 'c': -0.2167, 'x_thresh': 0.15}, # y = 0.867x - 0.2167 
-    3: {'m': 0.85, 'c': -0.17, 'x_thresh': 0.2}, # y = 0.85x - 0.17
-    # 4: {'m': 1.35, 'c': -0.475, 'x_thresh': 0.35}, # CHANGE
+    1: {"m": 0.85, "c": -0.17, "x_thresh": 0.2},
+    2: {"m": 0.867, "c": -0.2167, "x_thresh": 0.15},
+    3: {"m": 0.857, "c": -0.257, "x_thresh": 0.0},
 }
+# WRONG
+# REACHABILITY_BOUNDARIES = {
+#     1: {'m': 0.857, 'c': -0.257, 'x_thresh': 0.0}, # y = 0.857x - 0.257
+#     2: {'m': 0.867, 'c': -0.2167, 'x_thresh': 0.15}, # y = 0.867x - 0.2167 
+#     3: {'m': 0.85, 'c': -0.17, 'x_thresh': 0.2}, # y = 0.85x - 0.17
+# }
 
 def is_valid_point(point, table_height):
     """
@@ -37,7 +43,7 @@ def is_valid_point(point, table_height):
     return not is_invalid
 
 
-def gen_factors():
+# def gen_factors():
     """
     FOR THE TASKS: 'pick up the blue block' and 'set the cup upright'
     Generates random factors for scene setup, ensuring reachability.
@@ -69,14 +75,14 @@ def gen_factors():
             return factors
 
 
-# def gen_factors():
+def gen_factors():
     """
     FOR THE TASK: 'put the green block in the pot'
     Generates random factors for scene setup, ensuring reachability.
     """
     # Define a minimum distance to prevent overlap
     MIN_DIST_BLOCK_LIDPOT = 0.15
-    MIN_DIST_LID_POT = 0.2
+    # MIN_DIST_LID_POT = 0.2
     pot_x = 0.5
     pot_y = 0.5
     while True:
@@ -94,9 +100,9 @@ def gen_factors():
         
         # Select table height (you can randomize this among choices or keep it fixed)
         # table_height = np.random.choice([1, 2, 3, 4]) 
-        table_height = 1
+        table_height = 3
 
-        camera_viewpoint = "right"
+        camera_viewpoint = "back"
 
         # Calculate Euclidean distances
         # distance_block_lid = np.sqrt((block_x - lid_x)**2 + (block_y - lid_y)**2)

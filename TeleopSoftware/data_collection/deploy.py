@@ -13,6 +13,7 @@ lightning = RobotController('lightning', robot_ip='10.33.55.90', need_control=Tr
 CONTROL_FREQUENCY = 15 # Hz, matches data_collection.py step_hz
 STEP_DT = 1.0 / CONTROL_FREQUENCY
 EXECUTION_NUM = 16  # number of actions to execute in one step
+START_OFFSET = 0  # number of initial actions in the chunk to skip (for testing; trying to fix initial jerk back)
 
 # reset to home position
 lightning.go_home()
@@ -45,9 +46,21 @@ class ControllerInterface:
         current_policy_step = data_dict["step"] # Get main step number from caller
         sub_step_data = [] # List to store data for each sub-step execution
         current_state = {} # Variable to store the state *before* each sub-step command
+        
+        # --- OFFSET LOGIC ---
+        # Total available actions in the chunk
+        total_available = len(action_chunk) 
+        # Calculate the actual range to execute
+        start_idx = START_OFFSET
+        end_idx = min(start_idx + EXECUTION_NUM, total_available)
+        # Extract only the slice we want to execute
+        action_chunk_subset = action_chunk[start_idx:end_idx]
+        actual_execution_num = len(action_chunk_subset)
+        
         overall_start_time = time.time()
         
-        for i in range(EXECUTION_NUM):
+        # for i in range(EXECUTION_NUM):
+        for i in range(actual_execution_num):
             # print(f"Executing sub-step {i+1}/{EXECUTION_NUM} of control step {current_policy_step}")
             sub_step_start_time = time.time() # Timestamp for this specific sub-step
 
@@ -55,7 +68,8 @@ class ControllerInterface:
             current_state = self.get_robot_state()
 
             # 2. Get the action for this sub-step
-            action = np.array(action_chunk[i]) # Should be shape (7,)
+            # action = np.array(action_chunk[i]) # Should be shape (7,)
+            action = np.array(action_chunk_subset[i])
             arm_action = list(action[:6])
             gripper_action_normalized = action[6] # Expecting normalized [0, 1] from policy
             gripper_action_int = int(np.clip(gripper_action_normalized * 255.0, 0, 255)) # Scale to 0-255            
@@ -85,7 +99,7 @@ class ControllerInterface:
         # Get the *final* robot state after the last sub-step
         final_state = self.get_robot_state()
         overall_end_time = time.time()
-        print(f"Controller policy step {current_policy_step} took {overall_end_time - overall_start_time:.4f}s total for {EXECUTION_NUM} sub-steps.")
+        print(f"Controller policy step {current_policy_step} took {overall_end_time - overall_start_time:.4f}s total for {actual_execution_num} sub-steps.")
 
         self.step_count += 1 # Increment main step count
 

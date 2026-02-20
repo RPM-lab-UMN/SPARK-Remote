@@ -5,7 +5,7 @@
 
 ## Collecting data
 0. Make sure the "Starting SPARK-Remote" steps have been done in [../README.md](../README.md)
-1. Inside [./data_collection.py ](./data_collection.py), change the "data collection settings" variables as needed. If using/recording factors (e.g. table height, block position, etc.), change necessary values in [./factor_utils.py ](./factor_utils.py) (e.g. if collecting at table height h, change the table_height in gen_factors(); if collecting demos for a specific area on the table, change the position ranges of block_x and block_y; etc.). Also, comment out the gelsight lines in collect_one_frame() if not using gelsight; otherwise, there will be many annoying error messages.
+1. Inside [./data_collection.py ](./data_collection.py), change the "data collection settings" variables as needed like 'LANG_INSTRUCTION'. If using/recording factors (e.g. table height, block position, etc.), change necessary values in [./factor_utils.py ](./factor_utils.py) (e.g. if collecting at table height h, change the table_height in gen_factors(); if collecting demos for a specific area on the table, change the position ranges of block_x and block_y; etc.). Also, comment out the gelsight lines in collect_one_frame() if not using gelsight; otherwise, there will be many annoying error messages.
 2. Run [./data_collection.py ](./data_collection.py)
 3. Press 's' to record, 'e' to stop, etc.
 4. (Optional) After done collecting demos, send to the server for training, converting, etc.
@@ -39,7 +39,7 @@ In the TeleopSoftware/data_collection folder:
 1. ```pip install Pyro5```
 2. ```python -m Pyro5.nameserver```
 3. In another terminal, start a nameserver: ```pyro5-ns```
-4. Run ```python deploy.py```
+4. Run ```python deploy.py```. Make sure to change variables as necessary. Also, change the home position in [ur5.py ](./ur5/ur5.py)
   
 In pi0_deploy.ipynb in openpi/examples/:
 1. Run the steps to setup, load model, initialize cameras, and run actual deployment.

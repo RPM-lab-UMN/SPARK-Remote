@@ -129,7 +129,7 @@ def process_and_convert_to_lerobot_format(
                 state_t = np.concatenate([
                     np.array(step_t['joint_positions'], dtype=np.float32),
                     # np.array(eef_pose, dtype=np.float32),
-                    np.array([step_t['gripper_state']], dtype=np.float32)
+                    np.array([step_t['gripper_state'] / 255.0], dtype=np.float32)
                 ])
                 
                 episode_states.append(state_t)

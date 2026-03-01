@@ -31,6 +31,13 @@ RuntimeError: Frame didn't arrive within 5000
 Change necessary fields in [./convert_to_lerobot.py ](./convert_to_lerobot.py) (e.g. image_height, image_width) and run.  
 **Note:** Make sure datasets==3.6.0!
 
+**IMPORTANT:** Previously, in the state_t variable, I wasn't normalizing the gripper_state (i.e. the model trained with unnormalized gripper state but was outputting 0-1 gripper actions). I have since changed this so if you use this LeRobot conversion script and train your model with normalized gripper state, please change the following code in pi0_deploy.ipynb (in openpi/examples/) before you deploy:
+```
+# CHANGE TO THIS:
+gripper_state_normalized = np.array([current_obs_state["gripper_state"] / 255.0], dtype=np.float32)
+policy_state_vector = np.concatenate([joint_pos, gripper_state_normalized_])
+```
+
 ## Deployment
 On the UR tablet:
 1. Turn on UR5 arm. Ensure it's in remote control mode.  

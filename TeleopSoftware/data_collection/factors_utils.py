@@ -87,8 +87,10 @@ def gen_factors():
     pot_y = 0.5
     while True:
         # Generate factors
-        block_x = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
-        block_y = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
+        # block_x = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
+        # block_y = np.random.choice(np.linspace(0.0, 0.5, num=6)) # change for diff quadrant
+        block_x = 0.4
+        block_y = 0.7
 
         # lid_on = np.random.choice([True, False])
         # if lid_on:

@@ -29,14 +29,14 @@ from factors_utils import gen_factors
 
 
 # data collection settings
-SAVE_DIR = "/data/UR_teleop/pickblueblock/rightview/tableheight3/topright"
+SAVE_DIR = "/data/UR_teleop/putgreeninpot_lid_on/observed_failures/backview/"
 os.makedirs(SAVE_DIR, exist_ok=True)
-LANG_INSTRUCTION = "Pick up the blue block"
-# LANG_INSTRUCTION = "Put the green block in the pot"
+# LANG_INSTRUCTION = "Pick up the blue block"
+LANG_INSTRUCTION = "Put the green block in the pot"
 # LANG_INSTRUCTION = "Set the cup upright"
 USE_FACTORS = True # for Andrew's project; set to False otherwise
 # MAKE SURE TO CHANGE VALUES IN gen_factors()
-CSV_FILENAME = "eval_factors.csv" # save directory for factor values used in demo (Andrew's project)
+CSV_FILENAME = "train_factors.csv" # save directory for factor values used in demo (Andrew's project)
 STEP_HZ = 15
 STEP_DT = 1.0 / STEP_HZ
 # Replace with your camera serial numbers

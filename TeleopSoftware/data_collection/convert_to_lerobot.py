@@ -12,7 +12,7 @@ import cv2
 # Adjust these to match your specific data.
 CONFIG = {
     "robot_type": "UR5e with Robotiq 2F-85 Gripper",
-    "fps": 30,
+    "fps": 15, # Match this to data collection script
     "chunk_size": 100, # Number of episodes per chunk; may need to adjust for large datasets
     "image_height": 304, # DOUBLE CHECK THIS
     "image_width": 224, # DOUBLE CHECK THIS
